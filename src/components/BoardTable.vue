@@ -67,7 +67,7 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
 
 <template>
   <div class="flex-1 overflow-auto">
-    <table class="border-collapse bg-white dark:bg-gray-800 w-full">
+    <table class="w-full border-collapse bg-white dark:bg-gray-800">
       <colgroup>
         <col class="w-50" />
         <col class="w-10" />
@@ -76,19 +76,17 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
 
       <!-- Header -->
       <thead>
-        <tr
-          class="sticky top-0 z-10 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
-        >
+        <tr class="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
           <th
-            class="border-r border-gray-200 px-3 py-3 text-center text-sm font-semibold uppercase tracking-wide text-gray-400 dark:border-gray-700 dark:text-gray-500"
+            class="border-r border-gray-200 bg-white px-3 py-3 text-center text-sm font-semibold uppercase tracking-wide text-gray-400 dark:border-gray-700 dark:text-gray-500"
           >
             Stories
           </th>
-          <th class="border-r border-gray-200 dark:border-gray-700" />
+          <th class="border-r border-gray-200 bg-white dark:border-gray-700" />
           <th
             v-for="col in columns"
             :key="col"
-            class="border-r border-gray-200 px-3 py-3 text-center text-sm font-semibold text-gray-400 dark:border-gray-700 dark:text-gray-500 last:border-r-0"
+            class="border-r border-gray-200 bg-white px-3 py-3 text-center text-sm font-semibold text-gray-400 dark:border-gray-700 dark:text-gray-500 last:border-r-0"
           >
             {{ columnLabels[col] }}
           </th>
@@ -224,6 +222,12 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
 
 <style scoped>
 @reference "tailwindcss";
+
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
 
 .sortable-ghost {
   @apply opacity-40 outline-2 outline-dashed outline-blue-400/50;

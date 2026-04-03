@@ -55,7 +55,7 @@ onMounted(async () => {
 
   <div
     v-else-if="boardStore.currentBoard"
-    class="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900"
+    class="flex h-screen flex-col overflow-hidden bg-gray-50 dark:bg-gray-900"
   >
     <!-- Board Header -->
     <header
