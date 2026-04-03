@@ -34,7 +34,7 @@ function handleDragStart(e: DragEvent) {
 
 <template>
   <div
-    class="group relative flex w-40 cursor-default flex-col items-center justify-center rounded-sm border border-gray-200 px-2 py-2 text-center shadow-sm dark:border-gray-500"
+    class="group relative flex w-40 cursor-default flex-col justify-between rounded-sm border border-gray-200 px-2 py-2 text-center shadow-sm dark:border-gray-500"
     :style="{ backgroundColor: task.assignee ? generatePastelColor(task.assignee) : '#fff' }"
     draggable="true"
     @dragstart="handleDragStart"
@@ -57,7 +57,7 @@ function handleDragStart(e: DragEvent) {
     </p>
 
     <!-- Assignee -->
-    <div v-if="task.assignee" class="mt-1 flex items-center gap-0.5 text-xs text-gray-600">
+    <div v-if="task.assignee" class="mt-1 flex items-center gap-0.5 self-start text-xs text-gray-600">
       <User class="h-2.5 w-2.5" />
       <span>{{ task.assignee }}</span>
     </div>
