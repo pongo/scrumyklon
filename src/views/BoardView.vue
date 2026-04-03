@@ -127,14 +127,16 @@ function handleDragEnter(e: DragEvent, key: string) {
             @dragenter="handleDragEnter($event, cellKey(story.id, col))"
             @drop="handleDrop($event, story.id, col)"
           >
-            <TaskCard
-              v-for="task in getTasks(story.id, col)"
-              :key="task.id"
-              :task="task"
-              @dragover.prevent
-              @dragenter.stop="handleDragEnter($event, cellKey(story.id, col))"
-              @drop.stop.prevent="handleDrop($event, story.id, col)"
-            />
+            <div class="flex flex-wrap gap-1">
+              <TaskCard
+                v-for="task in getTasks(story.id, col)"
+                :key="task.id"
+                :task="task"
+                @dragover.prevent
+                @dragenter.stop="handleDragEnter($event, cellKey(story.id, col))"
+                @drop.stop.prevent="handleDrop($event, story.id, col)"
+              />
+            </div>
           </div>
         </div>
 
