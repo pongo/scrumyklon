@@ -116,6 +116,7 @@ function handleKeydown(e: KeyboardEvent) {
             list="assignee-suggestions"
             placeholder="UNASSIGNED"
             @keydown="handleKeydown"
+            @keyup.enter.prevent="handleSave"
             class="w-full rounded-sm border border-gray-300/60 bg-white/80 px-2 py-1 text-sm text-gray-600 outline-none focus:border-blue-500"
           />
           <datalist id="assignee-suggestions">
