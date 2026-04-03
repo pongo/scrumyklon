@@ -75,6 +75,7 @@ export async function saveCellTasks(
   const store = tx.objectStore("tasks");
 
   // Put all tasks with correct metadata. Existing records are overwritten by ID.
+  // Await each put to keep the transaction alive via idb's promise wrapping
   for (let i = 0; i < tasks.length; i++) {
     const t = { ...tasks[i]!, order: i, storyId, column };
     await store.put(t);

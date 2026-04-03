@@ -33,16 +33,26 @@ export async function updateBoard(
 
 export async function deleteBoard(id: string): Promise<void> {
   const db = await getDB();
-  // Delete associated stories and tasks first
-  const stories = await db.getAllFromIndex("stories", "by-board", id);
   const tx = db.transaction(["boards", "stories", "tasks"], "readwrite");
-  for (const story of stories) {
-    const tasks = await db.getAllFromIndex("tasks", "by-story", story.id);
-    for (const task of tasks) {
-      await tx.objectStore("tasks").delete(task.id);
-    }
-    await tx.objectStore("stories").delete(story.id);
+  const boardsStore = tx.objectStore("boards");
+  const storiesStore = tx.objectStore("stories");
+  const tasksStore = tx.objectStore("tasks");
+
+  // Get all stories for this board
+  const storyIds = await storiesStore.index("by-board").getAllKeys(id);
+
+  // Get all tasks for all stories
+  const allTaskIds: string[] = [];
+  for (const storyId of storyIds) {
+    const taskIds = await tasksStore.index("by-story").getAllKeys(storyId);
+    allTaskIds.push(...taskIds);
   }
-  await tx.objectStore("boards").delete(id);
-  await tx.done;
+
+  // Delete everything in parallel, wait for tx to commit
+  await Promise.all([
+    ...allTaskIds.map((taskId) => tasksStore.delete(taskId)),
+    ...storyIds.map((storyId) => storiesStore.delete(storyId)),
+    boardsStore.delete(id),
+    tx.done,
+  ]);
 }
