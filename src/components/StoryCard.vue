@@ -5,7 +5,6 @@ import { Check, X } from "@lucide/vue";
 import type { StoryRecord } from "@/db/db";
 
 const props = defineProps<{ story: StoryRecord }>();
-const emit = defineEmits<{ editingDone: [] }>();
 
 const boardStore = useBoardStore();
 const isEditing = ref(false);
@@ -30,10 +29,7 @@ async function saveEditing() {
     cancelEditing();
     return;
   }
-  // Optimistically update
-  props.story.title = trimmed;
   isEditing.value = false;
-  emit("editingDone");
   await boardStore.updateStoryTitle(props.story.id, trimmed);
 }
 
