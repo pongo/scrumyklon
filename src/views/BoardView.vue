@@ -5,7 +5,6 @@ import BoardTable from "@/components/BoardTable.vue";
 import TaskDialog from "@/components/TaskDialog.vue";
 import { useBoardTitle } from "@/composables/useBoardTitle";
 import { useStoryManagement } from "@/composables/useStoryManagement";
-import { useDragAndDrop } from "@/composables/useDragAndDrop";
 import type { TaskRecord } from "@/db/db";
 
 const props = defineProps<{ boardId: string }>();
@@ -23,8 +22,6 @@ const {
 
 const { isAddingStory, newStoryTitle, startAddStory, addStory, cancelAddStory } =
   useStoryManagement(boardStore);
-
-const { dragOverCell, cellKey, handleDrop, handleDragEnter } = useDragAndDrop(boardStore);
 
 const addTaskStoryId = ref<string | null>(null);
 
@@ -54,9 +51,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="boardStore.loading" class="flex min-h-screen items-center justify-center">
-    <p class="text-gray-500">Loading board...</p>
-  </div>
+  <div v-if="boardStore.loading" class="flex min-h-screen items-center justify-center"></div>
 
   <div
     v-else-if="boardStore.currentBoard"
@@ -90,14 +85,11 @@ onMounted(async () => {
       v-model:new-story-title="newStoryTitle"
       :stories="boardStore.stories"
       :is-adding-story="isAddingStory"
-      :drag-over-cell="dragOverCell"
       :get-tasks="getTasks"
       @add-task="openAddTask"
       @start-add-story="startAddStory"
       @add-story="addStory"
       @cancel-add-story="cancelAddStory"
-      @drop="handleDrop"
-      @drag-enter="handleDragEnter"
       @story-title-update="handleStoryTitleUpdate"
       @story-delete="handleStoryDelete"
     />

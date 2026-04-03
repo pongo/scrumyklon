@@ -1,36 +1,18 @@
-import { ref } from "vue";
 import type { useBoardStore } from "@/stores/board";
 import type { TaskRecord } from "@/db/db";
 
 export function useDragAndDrop(boardStore: ReturnType<typeof useBoardStore>) {
-  const dragOverCell = ref<string | null>(null); // key: "storyId:column"
-
-  function cellKey(storyId: string, column: TaskRecord["column"]) {
-    return `${storyId}:${column}`;
-  }
-
-  async function handleDrop(
-    e: DragEvent,
-    storyId: string,
-    column: TaskRecord["column"],
+  /** Called after VueDraggable drag ends. Persists the moved task only. */
+  async function handleSortEnd(
+    movedTaskId: string,
+    targetStoryId: string,
+    targetColumn: TaskRecord["column"],
+    targetIndex: number,
   ) {
-    e.preventDefault();
-    e.stopPropagation();
-    const taskId = e.dataTransfer?.getData("text/plain");
-    if (!taskId) return;
-    await boardStore.moveTask(taskId, storyId, column);
-    dragOverCell.value = null;
-  }
-
-  function handleDragEnter(e: DragEvent, key: string) {
-    e.stopPropagation();
-    dragOverCell.value = key;
+    await boardStore.moveTask(movedTaskId, targetStoryId, targetColumn, targetIndex);
   }
 
   return {
-    dragOverCell,
-    cellKey,
-    handleDrop,
-    handleDragEnter,
+    handleSortEnd,
   };
 }

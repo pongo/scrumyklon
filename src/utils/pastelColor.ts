@@ -14,8 +14,8 @@ export function generatePastelColor(text: string): string {
   // Saturation: 25-45% (soft pastel, not too vivid)
   // Lightness: 85-95% (very light, almost white)
   const hue = Math.abs(hash) % 360;
-  const saturation = 55 + (Math.abs(hash >> 8) % 21);
-  const lightness = 90 + (Math.abs(hash >> 16) % 11);
+  // const saturation = 55 + (Math.abs(hash >> 8) % 21);
+  // const lightness = 90 + (Math.abs(hash >> 16) % 11);
 
   // return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   return `hsl(${hue}, 70%, 90%)`;

@@ -1,29 +1,28 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
+import { VueDraggable } from "vue-draggable-plus";
+import { useBoardStore } from "@/stores/board";
 import StoryCard from "@/components/StoryCard.vue";
+import StoryForm from "@/components/StoryForm.vue";
 import TaskCard from "@/components/TaskCard.vue";
-import { Check, Plus, X } from "@lucide/vue";
+import { Plus } from "@lucide/vue";
 import type { TaskRecord, StoryRecord } from "@/db/db";
 
 const props = defineProps<{
   stories: StoryRecord[];
   isAddingStory: boolean;
-  dragOverCell: string | null;
   getTasks: (storyId: string, column: TaskRecord["column"]) => TaskRecord[];
 }>();
 
 const emit = defineEmits<{
   addTask: [storyId: string];
   startAddStory: [];
-  addStory: [];
+  addStory: [title: string];
   cancelAddStory: [];
-  drop: [e: DragEvent, storyId: string, column: TaskRecord["column"]];
-  dragEnter: [e: DragEvent, key: string];
   storyTitleUpdate: [id: string, title: string];
   storyDelete: [id: string];
 }>();
 
-const storyInputRef = ref<HTMLInputElement | null>(null);
 const newStoryTitle = defineModel<string>("newStoryTitle", { default: "" });
 
 const columnLabels: Record<TaskRecord["column"], string> = {
@@ -38,6 +37,32 @@ const columns: TaskRecord["column"][] = ["TO_DO", "IN_PROGRESS", "VERIFY", "DONE
 function cellKey(storyId: string, column: TaskRecord["column"]) {
   return `${storyId}:${column}`;
 }
+
+// Each cell gets its own mutable array that vue-draggable can reorder
+const cellLists = ref<Record<string, TaskRecord[]>>({});
+const boardStore = useBoardStore();
+
+// Sync cellLists with store data — mutate in-place to keep VueDraggable's reference
+function syncCellLists() {
+  for (const story of props.stories) {
+    for (const col of columns) {
+      const key = cellKey(story.id, col);
+      const newTasks = [...props.getTasks(story.id, col)];
+      if (!cellLists.value[key]) {
+        cellLists.value[key] = newTasks;
+      } else {
+        // Mutate existing array in-place so VueDraggable's v-model reference stays valid
+        const existing = cellLists.value[key]!;
+        existing.length = 0;
+        existing.push(...newTasks);
+      }
+    }
+  }
+}
+
+// Initial sync + watch for store task changes
+syncCellLists();
+watch(() => boardStore.tasks, syncCellLists, { deep: true });
 </script>
 
 <template>
@@ -104,27 +129,64 @@ function cellKey(storyId: string, column: TaskRecord["column"]) {
             </button>
           </td>
 
-          <!-- Task Cells -->
+          <!-- Task Cells with VueDraggable -->
           <td
             v-for="col in columns"
             :key="col"
-            class="relative border-r border-gray-200 bg-gray-50 p-2 transition-colors dark:border-gray-700 dark:bg-gray-900 last:border-r-0"
-            :class="dragOverCell === cellKey(story.id, col) ? 'bg-gray-200 dark:bg-gray-700' : ''"
+            class="relative border-r border-gray-200 bg-gray-50 p-2 align-top dark:border-gray-700 dark:bg-gray-900 last:border-r-0"
             :data-story-id="story.id"
             :data-column="col"
-            @dragover.prevent
-            @dragenter="emit('dragEnter', $event, cellKey(story.id, col))"
-            @drop="emit('drop', $event, story.id, col)"
+            style="height: 1px"
           >
-            <div class="flex flex-wrap gap-2">
-              <TaskCard
-                v-for="task in props.getTasks(story.id, col)"
-                :key="task.id"
-                :task="task"
-                @dragover.prevent
-                @dragenter.stop="emit('dragEnter', $event, cellKey(story.id, col))"
-                @drop.stop.prevent="emit('drop', $event, story.id, col)"
-              />
+            <div class="flex h-full flex-col">
+              <VueDraggable
+                :key="cellKey(story.id, col)"
+                v-model="cellLists[cellKey(story.id, col)]!"
+                :group="{ name: 'tasks', pull: true, put: true }"
+                class="flex flex-1 flex-wrap content-start gap-2"
+                :animation="150"
+                ghost-class="sortable-ghost"
+                chosen-class="sortable-chosen"
+                fallback-class="sortable-fallback"
+                :fallback-tolerance="3"
+                @end="
+                  async (e: any) => {
+                    const sourceKey = cellKey(story.id, col);
+                    const sourceTasks = cellLists[sourceKey] ?? [];
+
+                    // Find target cell from DOM
+                    const targetTd = e.to.closest('td[data-story-id]');
+                    const targetStoryId = targetTd?.dataset.storyId;
+                    const targetCol = targetTd?.dataset.column;
+
+                    if (!targetStoryId || !targetCol) return;
+
+                    const targetKey = cellKey(targetStoryId, targetCol);
+
+                    if (e.to === e.from) {
+                      // Intra-cell reorder — save only this cell
+                      await boardStore.saveCell(story.id, col, sourceTasks);
+                    } else {
+                      // Cross-cell move — save both source and target
+                      const targetTasks = cellLists[targetKey] ?? [];
+                      await boardStore.saveBothCells(
+                        story.id,
+                        col,
+                        sourceTasks,
+                        targetStoryId,
+                        targetCol,
+                        targetTasks,
+                      );
+                    }
+                  }
+                "
+              >
+                <TaskCard
+                  v-for="task in cellLists[cellKey(story.id, col)]"
+                  :key="task.id"
+                  :task="task"
+                />
+              </VueDraggable>
             </div>
           </td>
         </tr>
@@ -134,28 +196,12 @@ function cellKey(storyId: string, column: TaskRecord["column"]) {
       <tfoot>
         <tr class="border-b border-gray-200 dark:border-gray-700">
           <td class="border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
-            <div v-if="isAddingStory" class="flex flex-col gap-1 p-2">
-              <input
-                ref="storyInputRef"
-                v-model="newStoryTitle"
-                type="text"
-                class="w-full rounded-sm border border-blue-400 px-2 py-1.5 text-sm outline-none dark:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-              />
-              <div class="flex gap-1">
-                <button
-                  @click="emit('addStory')"
-                  class="flex flex-1 items-center justify-center rounded-sm bg-green-600 py-1 text-white hover:bg-green-700"
-                >
-                  <Check class="h-4 w-4" />
-                </button>
-                <button
-                  @click="emit('cancelAddStory')"
-                  class="flex flex-1 items-center justify-center rounded-sm bg-gray-500 py-1 text-white hover:bg-gray-600"
-                >
-                  <X class="h-4 w-4" />
-                </button>
-              </div>
-            </div>
+            <StoryForm
+              v-if="isAddingStory"
+              :initial-title="newStoryTitle"
+              @submit="(title) => emit('addStory', title)"
+              @cancel="emit('cancelAddStory')"
+            />
             <button
               v-else
               @click="emit('startAddStory')"
@@ -175,3 +221,23 @@ function cellKey(storyId: string, column: TaskRecord["column"]) {
     </table>
   </div>
 </template>
+
+<style scoped>
+@reference "tailwindcss";
+
+.sortable-ghost {
+  @apply opacity-40 outline-2 outline-dashed outline-blue-400/50;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 6px,
+    rgba(59, 130, 246, 0.15) 6px,
+    rgba(59, 130, 246, 0.15) 12px
+  ) !important;
+  box-shadow: none !important;
+}
+
+.sortable-fallback {
+  @apply opacity-80;
+}
+</style>
