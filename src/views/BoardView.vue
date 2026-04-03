@@ -1,21 +1,32 @@
 <script setup lang="ts">
-import { onMounted, ref, nextTick } from "vue";
+import { onMounted, ref } from "vue";
 import { useBoardStore } from "@/stores/board";
-import StoryCard from "@/components/StoryCard.vue";
-import TaskCard from "@/components/TaskCard.vue";
+import BoardTable from "@/components/BoardTable.vue";
 import TaskDialog from "@/components/TaskDialog.vue";
-import { Check, Plus, X } from "@lucide/vue";
+import { useBoardTitle } from "@/composables/useBoardTitle";
+import { useStoryManagement } from "@/composables/useStoryManagement";
+import { useDragAndDrop } from "@/composables/useDragAndDrop";
 import type { TaskRecord } from "@/db/db";
 
 const props = defineProps<{ boardId: string }>();
 
 const boardStore = useBoardStore();
 
-const isAddingStory = ref(false);
-const newStoryTitle = ref("");
-const dragOverCell = ref<string | null>(null); // key: "storyId:column"
+const {
+  isEditingTitle,
+  titleInput,
+  titleInputRef,
+  startEditing: startEditingTitle,
+  saveTitle,
+  handleKeydown: handleTitleKeydown,
+} = useBoardTitle(boardStore);
+
+const { isAddingStory, newStoryTitle, startAddStory, addStory, cancelAddStory } =
+  useStoryManagement(boardStore);
+
+const { dragOverCell, cellKey, handleDrop, handleDragEnter } = useDragAndDrop(boardStore);
+
 const addTaskStoryId = ref<string | null>(null);
-const storyInputRef = ref<HTMLInputElement | null>(null);
 
 function openAddTask(storyId: string) {
   addTaskStoryId.value = storyId;
@@ -25,62 +36,21 @@ function closeAddTask() {
   addTaskStoryId.value = null;
 }
 
-const columnLabels: Record<TaskRecord["column"], string> = {
-  TO_DO: "To Do",
-  IN_PROGRESS: "In Progress",
-  VERIFY: "Verify",
-  DONE: "Done",
-};
-
-const columns: TaskRecord["column"][] = ["TO_DO", "IN_PROGRESS", "VERIFY", "DONE"];
-
-onMounted(async () => {
-  await boardStore.loadBoard(props.boardId);
-});
-
 function getTasks(storyId: string, column: TaskRecord["column"]) {
   return boardStore.getTasksForStory(storyId, column);
 }
 
-function cellKey(storyId: string, column: TaskRecord["column"]) {
-  return `${storyId}:${column}`;
+async function handleStoryTitleUpdate(id: string, title: string) {
+  await boardStore.updateStoryTitle(id, title);
 }
 
-// Story input
-async function startAddStory() {
-  isAddingStory.value = true;
-  await nextTick();
-  storyInputRef.value?.focus();
+async function handleStoryDelete(id: string) {
+  await boardStore.deleteStory(id);
 }
 
-async function addStory() {
-  const trimmed = newStoryTitle.value.trim();
-  if (trimmed) {
-    await boardStore.createStory(trimmed);
-  }
-  newStoryTitle.value = "";
-  isAddingStory.value = false;
-}
-
-function cancelAddStory() {
-  isAddingStory.value = false;
-  newStoryTitle.value = "";
-}
-
-// Drag & Drop
-async function handleDrop(e: DragEvent, storyId: string, column: TaskRecord["column"]) {
-  e.preventDefault();
-  e.stopPropagation();
-  const taskId = e.dataTransfer?.getData("text/plain");
-  if (!taskId) return;
-  await boardStore.moveTask(taskId, storyId, column);
-  dragOverCell.value = null;
-}
-
-function handleDragEnter(e: DragEvent, key: string) {
-  e.stopPropagation();
-  dragOverCell.value = key;
-}
+onMounted(async () => {
+  await boardStore.loadBoard(props.boardId);
+});
 </script>
 
 <template>
@@ -96,129 +66,41 @@ function handleDragEnter(e: DragEvent, key: string) {
     <header
       class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-800"
     >
-      <h1 class="text-xl font-semibold text-gray-800 dark:text-gray-100">
-        {{ boardStore.currentBoard.title }}
+      <div v-if="isEditingTitle">
+        <input
+          ref="titleInputRef"
+          v-model="titleInput"
+          @blur="saveTitle"
+          @keyup.enter="($event.target as HTMLInputElement).blur()"
+          @keydown="handleTitleKeydown"
+          type="text"
+          class="rounded border border-gray-300 px-2 py-1 text-lg font-semibold outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 field-sizing-content min-w-10"
+          autofocus
+        />
+      </div>
+      <h1 v-else class="text-xl font-semibold text-gray-800 dark:text-gray-100">
+        <span @dblclick="startEditingTitle" title="Double click to edit">{{
+          boardStore.currentBoard.title
+        }}</span>
       </h1>
     </header>
 
     <!-- Board Table -->
-    <div class="flex flex-1 overflow-auto">
-      <!-- Header Row -->
-      <div class="w-full">
-        <!-- Column Headers -->
-        <div
-          class="sticky top-0 z-10 grid grid-cols-[200px_40px_repeat(4,1fr)] border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
-        >
-          <div
-            class="border-r border-gray-200 px-3 py-3 text-center text-sm font-semibold uppercase tracking-wide text-gray-400 dark:border-gray-700 dark:text-gray-500"
-          >
-            Stories
-          </div>
-          <div class="border-r border-gray-200" />
-          <div
-            v-for="col in columns"
-            :key="col"
-            class="border-r border-gray-200 px-3 py-3 text-center text-sm font-semibold text-gray-400 dark:border-gray-700 dark:text-gray-500 last:border-r-0"
-          >
-            {{ columnLabels[col] }}
-          </div>
-        </div>
-
-        <!-- Story Rows -->
-        <div
-          v-for="story in boardStore.stories"
-          :key="story.id"
-          class="grid grid-cols-[200px_40px_repeat(4,1fr)] border-b border-gray-200 dark:border-gray-700"
-        >
-          <!-- Story Cell -->
-          <div class="border-r border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800">
-            <StoryCard :story="story" />
-          </div>
-
-          <!-- Add Task Button Cell -->
-          <div
-            class="flex items-center justify-center border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
-            @click="openAddTask(story.id)"
-          >
-            <button
-              class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
-              title="Add Task"
-            >
-              <Plus class="h-4 w-4" />
-            </button>
-          </div>
-
-          <!-- Task Cells -->
-          <div
-            v-for="col in columns"
-            :key="col"
-            class="relative border-r border-gray-200 bg-gray-50 p-2 transition-colors dark:border-gray-700 dark:bg-gray-900 last:border-r-0"
-            :class="dragOverCell === cellKey(story.id, col) ? 'bg-gray-200 dark:bg-gray-700' : ''"
-            :data-story-id="story.id"
-            :data-column="col"
-            @dragover.prevent
-            @dragenter="handleDragEnter($event, cellKey(story.id, col))"
-            @drop="handleDrop($event, story.id, col)"
-          >
-            <div class="flex flex-wrap gap-1">
-              <TaskCard
-                v-for="task in getTasks(story.id, col)"
-                :key="task.id"
-                :task="task"
-                @dragover.prevent
-                @dragenter.stop="handleDragEnter($event, cellKey(story.id, col))"
-                @drop.stop.prevent="handleDrop($event, story.id, col)"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- New Story Row -->
-        <div
-          class="grid grid-cols-[200px_40px_repeat(4,1fr)] border-b border-gray-200 dark:border-gray-700"
-        >
-          <div class="border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
-            <div v-if="isAddingStory" class="flex flex-col gap-1 p-2">
-              <input
-                ref="storyInputRef"
-                v-model="newStoryTitle"
-                type="text"
-                class="w-full rounded-sm border border-blue-400 px-2 py-1.5 text-sm outline-none dark:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-              />
-              <div class="flex gap-1">
-                <button
-                  @click="addStory"
-                  class="flex flex-1 items-center justify-center rounded-sm bg-green-600 py-1 text-white hover:bg-green-700"
-                >
-                  <Check class="h-4 w-4" />
-                </button>
-                <button
-                  @click="cancelAddStory"
-                  class="flex flex-1 items-center justify-center rounded-sm bg-gray-500 py-1 text-white hover:bg-gray-600"
-                >
-                  <X class="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-            <button
-              v-else
-              @click="startAddStory"
-              class="flex w-full items-center justify-center text-sm p-2 text-gray-400 underline hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 skip-ink-none"
-            >
-              <span class="cursor-pointer">New Story</span>
-            </button>
-          </div>
-          <!-- Empty add-task cell -->
-          <div class="border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800" />
-          <!-- Empty cells for task columns -->
-          <div
-            v-for="col in columns"
-            :key="col"
-            class="border-r border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-900 last:border-r-0"
-          />
-        </div>
-      </div>
-    </div>
+    <BoardTable
+      v-model:new-story-title="newStoryTitle"
+      :stories="boardStore.stories"
+      :is-adding-story="isAddingStory"
+      :drag-over-cell="dragOverCell"
+      :get-tasks="getTasks"
+      @add-task="openAddTask"
+      @start-add-story="startAddStory"
+      @add-story="addStory"
+      @cancel-add-story="cancelAddStory"
+      @drop="handleDrop"
+      @drag-enter="handleDragEnter"
+      @story-title-update="handleStoryTitleUpdate"
+      @story-delete="handleStoryDelete"
+    />
   </div>
 
   <div v-else class="flex min-h-screen items-center justify-center">

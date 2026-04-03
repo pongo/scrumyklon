@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useBoardStore } from "@/stores/board";
 import { generatePastelColor } from "@/utils/pastelColor";
 import { Check, X } from "@lucide/vue";
@@ -19,6 +19,11 @@ const title = ref(props.mode === "edit" && props.task ? props.task.title : "");
 const assignee = ref(props.mode === "edit" && props.task ? props.task.assignee : "");
 const isSaving = ref(false);
 const overlayMousedown = ref(false);
+
+const assigneeSuggestions = computed(() => {
+  const assignees = boardStore.tasks.map((t) => t.assignee).filter((a) => a.trim() !== "");
+  return [...new Set(assignees)].sort();
+});
 
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
 
@@ -108,10 +113,15 @@ function handleKeydown(e: KeyboardEvent) {
           <input
             v-model="assignee"
             type="text"
+            list="assignee-suggestions"
             placeholder="UNASSIGNED"
             @keydown="handleKeydown"
+            @keyup.enter.prevent="handleSave"
             class="w-full rounded-sm border border-gray-300/60 bg-white/80 px-2 py-1 text-sm text-gray-600 outline-none focus:border-blue-500"
           />
+          <datalist id="assignee-suggestions">
+            <option v-for="name in assigneeSuggestions" :key="name" :value="name" />
+          </datalist>
         </div>
 
         <!-- Actions -->

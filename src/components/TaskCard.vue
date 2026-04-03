@@ -34,7 +34,8 @@ function handleDragStart(e: DragEvent) {
 
 <template>
   <div
-    class="group relative flex w-40 cursor-default flex-col justify-between rounded-sm border border-gray-200 px-2 py-2 text-center shadow-sm dark:border-gray-500"
+    class="group relative flex w-35 cursor-default flex-col justify-between rounded-xs shadow-sm px-2 py-2 text-center dark:border-gray-500"
+    _class="group relative flex w-35 cursor-default flex-col justify-between rounded-sm border border-gray-200 px-2 py-2 text-center shadow-sm dark:border-gray-500"
     :style="{ backgroundColor: task.assignee ? generatePastelColor(task.assignee) : '#fff' }"
     draggable="true"
     @dragstart="handleDragStart"
@@ -47,17 +48,24 @@ function handleDragStart(e: DragEvent) {
       v-show="isHovered"
       @click.stop="handleDelete"
       class="absolute right-0.5 top-0.5 rounded p-0.5 text-gray-400 hover:text-red-500"
+      title="Delete"
     >
       <X class="h-3.5 w-3.5" />
     </button>
 
     <!-- Task Title -->
-    <p class="whitespace-pre-wrap text-xs font-medium text-gray-800 dark:text-gray-900">
+    <p
+      class="whitespace-pre-wrap text-xs font-medium text-gray-800 dark:text-gray-900"
+      :class="[task.assignee ? 'pb-5' : '']"
+    >
       {{ task.title }}
     </p>
 
     <!-- Assignee -->
-    <div v-if="task.assignee" class="mt-1 flex items-center gap-0.5 self-start text-xs text-gray-600">
+    <div
+      v-if="task.assignee"
+      class="flex items-center gap-0.5 self-start text-xs text-gray-600 absolute left-0.5 bottom-0.5"
+    >
       <User class="h-2.5 w-2.5" />
       <span>{{ task.assignee }}</span>
     </div>

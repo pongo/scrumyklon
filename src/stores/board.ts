@@ -59,8 +59,18 @@ export const useBoardStore = defineStore("board", () => {
 
   async function updateBoardTitle(title: string): Promise<void> {
     if (!currentBoard.value) return;
-    await boardsApi.updateBoard(currentBoard.value.id, { title });
+    const previousTitle = currentBoard.value.title;
+
+    // Optimistic update
     currentBoard.value.title = title;
+
+    try {
+      await boardsApi.updateBoard(currentBoard.value.id, { title });
+    } catch (error) {
+      // Rollback on error
+      currentBoard.value.title = previousTitle;
+      throw error;
+    }
   }
 
   async function deleteCurrentBoard(): Promise<void> {
@@ -82,9 +92,21 @@ export const useBoardStore = defineStore("board", () => {
   }
 
   async function updateStoryTitle(storyId: string, title: string): Promise<void> {
-    await storiesApi.updateStory(storyId, { title });
     const story = stories.value.find((s) => s.id === storyId);
+    const previousTitle = story?.title;
+    
+    // Optimistic update
     if (story) story.title = title;
+    
+    try {
+      await storiesApi.updateStory(storyId, { title });
+    } catch (error) {
+      // Rollback on error
+      if (story && previousTitle !== undefined) {
+        story.title = previousTitle;
+      }
+      throw error;
+    }
   }
 
   async function deleteStory(storyId: string): Promise<void> {
