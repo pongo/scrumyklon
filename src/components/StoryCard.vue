@@ -15,11 +15,12 @@ function handleDelete() {
 </script>
 
 <template>
-  <div class="group relative flex items-center justify-center bg-gray-100">
+  <div class="group relative flex h-full items-center justify-center">
     <!-- Delete button on hover -->
     <button
       @click.stop="handleDelete"
       class="absolute right-1 top-1 hidden rounded p-0.5 text-gray-400 hover:text-red-500 group-hover:block"
+      title="Delete Story"
     >
       <X class="h-3.5 w-3.5" />
     </button>

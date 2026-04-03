@@ -139,8 +139,13 @@ function handleDragEnter(e: DragEvent, key: string) {
             class="border-b border-gray-200 dark:border-gray-700"
           >
             <!-- Story Cell -->
-            <td class="border-r border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800">
-              <StoryCard :story="story" />
+            <td
+              class="border-r border-gray-200 bg-white p-0 align-top dark:border-gray-700 dark:bg-gray-800"
+              style="height: 1px"
+            >
+              <div class="h-full">
+                <StoryCard :story="story" />
+              </div>
             </td>
 
             <!-- Add Task Button Cell -->
