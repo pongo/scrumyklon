@@ -15,9 +15,7 @@ function handleDelete() {
 </script>
 
 <template>
-  <div
-    class="group relative flex items-center justify-between rounded-sm bg-gray-100 px-3 py-4 dark:bg-gray-700"
-  >
+  <div class="group relative flex items-center justify-center bg-gray-100">
     <!-- Delete button on hover -->
     <button
       @click.stop="handleDelete"
@@ -27,8 +25,8 @@ function handleDelete() {
     </button>
 
     <!-- Story Title -->
-    <span class="text-center text-sm font-medium text-gray-700 dark:text-gray-200">
+    <div class="text-center text-sm font-medium text-gray-700 dark:text-gray-200">
       {{ story.title }}
-    </span>
+    </div>
   </div>
 </template>

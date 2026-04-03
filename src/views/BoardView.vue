@@ -144,9 +144,11 @@ function handleDragEnter(e: DragEvent, key: string) {
             </td>
 
             <!-- Add Task Button Cell -->
-            <td class="border-r border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800">
+            <td
+              class="border-r border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800"
+              @click="openAddTask(story.id)"
+            >
               <button
-                @click="openAddTask(story.id)"
                 class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                 title="Add Task"
               >
@@ -166,7 +168,7 @@ function handleDragEnter(e: DragEvent, key: string) {
               @dragenter="handleDragEnter($event, cellKey(story.id, col))"
               @drop="handleDrop($event, story.id, col)"
             >
-              <div class="flex flex-wrap gap-1">
+              <div class="flex flex-wrap gap-2">
                 <TaskCard
                   v-for="task in getTasks(story.id, col)"
                   :key="task.id"
