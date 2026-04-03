@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, nextTick } from "vue";
-import { useBoardStore } from "@/stores/board";
 import { Check, X } from "@lucide/vue";
 import type { StoryRecord } from "@/db/db";
 
 const props = defineProps<{ story: StoryRecord }>();
+const emit = defineEmits<{
+  titleUpdate: [id: string, title: string];
+  delete: [id: string];
+}>();
 
-const boardStore = useBoardStore();
 const isEditing = ref(false);
 const editTitle = ref("");
 const inputRef = ref<HTMLInputElement | null>(null);
@@ -30,7 +32,7 @@ async function saveEditing() {
     return;
   }
   isEditing.value = false;
-  await boardStore.updateStoryTitle(props.story.id, trimmed);
+  emit("titleUpdate", props.story.id, trimmed);
 }
 
 function handleKeydown(e: KeyboardEvent) {
@@ -44,7 +46,7 @@ function handleKeydown(e: KeyboardEvent) {
 
 function handleDelete() {
   if (confirm("Delete this story and all its tasks?")) {
-    boardStore.deleteStory(props.story.id);
+    emit("delete", props.story.id);
   }
 }
 </script>

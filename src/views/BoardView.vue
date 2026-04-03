@@ -46,6 +46,14 @@ function getTasks(storyId: string, column: TaskRecord["column"]) {
   return boardStore.getTasksForStory(storyId, column);
 }
 
+async function handleStoryTitleUpdate(id: string, title: string) {
+  await boardStore.updateStoryTitle(id, title);
+}
+
+async function handleStoryDelete(id: string) {
+  await boardStore.deleteStory(id);
+}
+
 onMounted(async () => {
   await boardStore.loadBoard(props.boardId);
 });
@@ -99,6 +107,8 @@ onMounted(async () => {
       @cancel-add-story="cancelAddStory"
       @drop="handleDrop"
       @drag-enter="handleDragEnter"
+      @story-title-update="handleStoryTitleUpdate"
+      @story-delete="handleStoryDelete"
     />
   </div>
 

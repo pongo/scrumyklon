@@ -19,6 +19,8 @@ const emit = defineEmits<{
   cancelAddStory: [];
   drop: [e: DragEvent, storyId: string, column: TaskRecord["column"]];
   dragEnter: [e: DragEvent, key: string];
+  storyTitleUpdate: [id: string, title: string];
+  storyDelete: [id: string];
 }>();
 
 const storyInputRef = ref<HTMLInputElement | null>(null);
@@ -81,7 +83,11 @@ function cellKey(storyId: string, column: TaskRecord["column"]) {
             style="height: 1px"
           >
             <div class="h-full">
-              <StoryCard :story="story" />
+              <StoryCard
+                :story="story"
+                @title-update="(id, title) => emit('storyTitleUpdate', id, title)"
+                @delete="(id) => emit('storyDelete', id)"
+              />
             </div>
           </td>
 
