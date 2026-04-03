@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, nextTick } from "vue";
 import { useBoardStore } from "@/stores/board";
 import StoryCard from "@/components/StoryCard.vue";
 import TaskCard from "@/components/TaskCard.vue";
@@ -15,6 +15,7 @@ const isAddingStory = ref(false);
 const newStoryTitle = ref("");
 const dragOverCell = ref<string | null>(null); // key: "storyId:column"
 const addTaskStoryId = ref<string | null>(null);
+const storyInputRef = ref<HTMLInputElement | null>(null);
 
 function openAddTask(storyId: string) {
   addTaskStoryId.value = storyId;
@@ -46,8 +47,10 @@ function cellKey(storyId: string, column: TaskRecord["column"]) {
 }
 
 // Story input
-function startAddStory() {
+async function startAddStory() {
   isAddingStory.value = true;
+  await nextTick();
+  storyInputRef.value?.focus();
 }
 
 async function addStory() {
@@ -173,13 +176,13 @@ function handleDragEnter(e: DragEvent, key: string) {
         <div
           class="grid grid-cols-[200px_40px_repeat(4,1fr)] border-b border-gray-200 dark:border-gray-700"
         >
-          <div class="border-r border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800">
-            <div v-if="isAddingStory" class="flex flex-col gap-1">
+          <div class="border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+            <div v-if="isAddingStory" class="flex flex-col gap-1 p-2">
               <input
+                ref="storyInputRef"
                 v-model="newStoryTitle"
                 type="text"
                 class="w-full rounded-sm border border-blue-400 px-2 py-1.5 text-sm outline-none dark:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-                autofocus
               />
               <div class="flex gap-1">
                 <button
@@ -199,7 +202,7 @@ function handleDragEnter(e: DragEvent, key: string) {
             <button
               v-else
               @click="startAddStory"
-              class="flex w-full items-center justify-center text-sm text-gray-400 underline hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 skip-ink-none"
+              class="flex w-full items-center justify-center text-sm p-2 text-gray-400 underline hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 skip-ink-none"
             >
               <span class="cursor-pointer">New Story</span>
             </button>
