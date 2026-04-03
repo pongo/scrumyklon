@@ -8,7 +8,6 @@ import type { TaskRecord, StoryRecord } from "@/db/db";
 const props = defineProps<{
   stories: StoryRecord[];
   isAddingStory: boolean;
-  newStoryTitle: string;
   dragOverCell: string | null;
   getTasks: (storyId: string, column: TaskRecord["column"]) => TaskRecord[];
 }>();
@@ -20,14 +19,10 @@ const emit = defineEmits<{
   cancelAddStory: [];
   drop: [e: DragEvent, storyId: string, column: TaskRecord["column"]];
   dragEnter: [e: DragEvent, key: string];
-  "update:newStoryTitle": [value: string];
 }>();
 
 const storyInputRef = ref<HTMLInputElement | null>(null);
-
-function updateStoryTitle(value: string) {
-  emit("update:newStoryTitle", value);
-}
+const newStoryTitle = defineModel<string>("newStoryTitle", { default: "" });
 
 const columnLabels: Record<TaskRecord["column"], string> = {
   TO_DO: "To Do",
@@ -136,8 +131,7 @@ function cellKey(storyId: string, column: TaskRecord["column"]) {
             <div v-if="isAddingStory" class="flex flex-col gap-1 p-2">
               <input
                 ref="storyInputRef"
-                :value="newStoryTitle"
-                @input="updateStoryTitle(($event.target as HTMLInputElement).value)"
+                v-model="newStoryTitle"
                 type="text"
                 class="w-full rounded-sm border border-blue-400 px-2 py-1.5 text-sm outline-none dark:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
               />
