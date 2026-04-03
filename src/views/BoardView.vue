@@ -11,11 +11,38 @@ const props = defineProps<{ boardId: string }>();
 
 const boardStore = useBoardStore();
 
+const isEditingTitle = ref(false);
+const titleInput = ref("");
+const titleInputRef = ref<HTMLInputElement | null>(null);
 const isAddingStory = ref(false);
 const newStoryTitle = ref("");
 const dragOverCell = ref<string | null>(null); // key: "storyId:column"
 const addTaskStoryId = ref<string | null>(null);
 const storyInputRef = ref<HTMLInputElement | null>(null);
+
+function startEditingTitle() {
+  titleInput.value = boardStore.currentBoard?.title ?? "";
+  isEditingTitle.value = true;
+  nextTick(() => {
+    titleInputRef.value?.focus();
+  });
+}
+
+function saveTitle() {
+  const trimmed = titleInput.value.trim();
+  if (trimmed) {
+    boardStore.updateBoardTitle(trimmed);
+  }
+  isEditingTitle.value = false;
+}
+
+function handleTitleKeydown(e: KeyboardEvent) {
+  if (e.key === "Enter") {
+    saveTitle();
+  } else if (e.key === "Escape") {
+    isEditingTitle.value = false;
+  }
+}
 
 function openAddTask(storyId: string) {
   addTaskStoryId.value = storyId;
@@ -96,8 +123,24 @@ function handleDragEnter(e: DragEvent, key: string) {
     <header
       class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-800"
     >
-      <h1 class="text-xl font-semibold text-gray-800 dark:text-gray-100">
-        {{ boardStore.currentBoard.title }}
+      <div v-if="isEditingTitle">
+        <input
+          ref="titleInputRef"
+          v-model="titleInput"
+          @blur="saveTitle"
+          @keydown="handleTitleKeydown"
+          type="text"
+          class="rounded border border-gray-300 px-2 py-1 text-lg font-semibold outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 field-sizing-content min-w-10"
+          autofocus
+        />
+      </div>
+      <h1
+        v-else
+        class="text-xl font-semibold text-gray-800 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300"
+      >
+        <span @dblclick="startEditingTitle" title="Double click to edit">{{
+          boardStore.currentBoard.title
+        }}</span>
       </h1>
     </header>
 
