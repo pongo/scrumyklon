@@ -28,18 +28,20 @@ function startEditingTitle() {
   });
 }
 
-function saveTitle() {
+async function saveTitle() {
   const trimmed = titleInput.value.trim();
-  if (trimmed) {
-    boardStore.updateBoardTitle(trimmed);
+  if (!trimmed || !boardStore.currentBoard) {
+    isEditingTitle.value = false;
+    return;
   }
+  // Optimistically update to prevent flicker
+  boardStore.currentBoard.title = trimmed;
   isEditingTitle.value = false;
+  await boardStore.updateBoardTitle(trimmed);
 }
 
 function handleTitleKeydown(e: KeyboardEvent) {
-  if (e.key === "Enter") {
-    saveTitle();
-  } else if (e.key === "Escape") {
+  if (e.key === "Escape") {
     isEditingTitle.value = false;
   }
 }
@@ -128,6 +130,7 @@ function handleDragEnter(e: DragEvent, key: string) {
           ref="titleInputRef"
           v-model="titleInput"
           @blur="saveTitle"
+          @keyup.enter="($event.target as HTMLInputElement).blur()"
           @keydown="handleTitleKeydown"
           type="text"
           class="rounded border border-gray-300 px-2 py-1 text-lg font-semibold outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 field-sizing-content min-w-10"
