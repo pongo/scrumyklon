@@ -3,10 +3,7 @@ import { ref, onMounted, nextTick } from "vue";
 import { Check, X } from "@lucide/vue";
 
 const props = defineProps<{
-  /** Initial title for edit mode */
   initialTitle?: string;
-  /** Autofocus the input when component mounts */
-  autofocus?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -19,10 +16,8 @@ const inputRef = ref<HTMLInputElement | null>(null);
 let submitted = false;
 
 onMounted(async () => {
-  if (props.autofocus) {
-    await nextTick();
-    inputRef.value?.focus();
-  }
+  await nextTick();
+  inputRef.value?.focus();
 });
 
 function handleSubmit() {
@@ -58,7 +53,6 @@ function handleKeydown(e: KeyboardEvent) {
       @keydown="handleKeydown"
       @blur="handleSubmit"
       type="text"
-      :autofocus="autofocus || undefined"
       class="w-full rounded-sm border border-blue-400 px-2 py-1.5 text-sm outline-none dark:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
     />
     <div class="flex gap-1">

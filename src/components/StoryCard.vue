@@ -39,8 +39,12 @@ function handleDelete() {
     <StoryForm
       v-if="isEditing"
       :initial-title="story.title"
-      autofocus
-      @submit="(title) => { emit('titleUpdate', story.id, title); isEditing = false; }"
+      @submit="
+        (title) => {
+          emit('titleUpdate', story.id, title);
+          isEditing = false;
+        }
+      "
       @cancel="isEditing = false"
     />
 

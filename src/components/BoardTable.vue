@@ -199,7 +199,6 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
             <StoryForm
               v-if="isAddingStory"
               :initial-title="newStoryTitle"
-              autofocus
               @submit="(title) => emit('addStory', title)"
               @cancel="emit('cancelAddStory')"
             />
