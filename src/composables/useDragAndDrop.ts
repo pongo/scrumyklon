@@ -2,14 +2,14 @@ import type { useBoardStore } from "@/stores/board";
 import type { TaskRecord } from "@/db/db";
 
 export function useDragAndDrop(boardStore: ReturnType<typeof useBoardStore>) {
-  /** Called after a drag ends — persist the new order to DB */
+  /** Called after VueDraggable drag ends. Persists the moved task only. */
   async function handleSortEnd(
-    taskId: string,
-    newStoryId: string,
-    newColumn: TaskRecord["column"],
-    insertIndex: number,
+    movedTaskId: string,
+    targetStoryId: string,
+    targetColumn: TaskRecord["column"],
+    targetIndex: number,
   ) {
-    await boardStore.moveTask(taskId, newStoryId, newColumn, insertIndex);
+    await boardStore.moveTask(movedTaskId, targetStoryId, targetColumn, targetIndex);
   }
 
   return {

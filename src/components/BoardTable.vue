@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
+import { ref, watch } from "vue";
 import { VueDraggable } from "vue-draggable-plus";
+import { useBoardStore } from "@/stores/board";
 import StoryCard from "@/components/StoryCard.vue";
 import TaskCard from "@/components/TaskCard.vue";
 import { Check, Plus, X } from "@lucide/vue";
@@ -19,7 +20,6 @@ const emit = defineEmits<{
   cancelAddStory: [];
   storyTitleUpdate: [id: string, title: string];
   storyDelete: [id: string];
-  taskReorder: [taskId: string, storyId: string, column: TaskRecord["column"], insertIndex: number];
 }>();
 
 const storyInputRef = ref<HTMLInputElement | null>(null);
@@ -40,20 +40,29 @@ function cellKey(storyId: string, column: TaskRecord["column"]) {
 
 // Each cell gets its own mutable array that vue-draggable can reorder
 const cellLists = ref<Record<string, TaskRecord[]>>({});
+const boardStore = useBoardStore();
 
-// Sync cellLists with store data
+// Sync cellLists with store data — mutate in-place to keep VueDraggable's reference
 function syncCellLists() {
   for (const story of props.stories) {
     for (const col of columns) {
       const key = cellKey(story.id, col);
-      cellLists.value[key] = [...props.getTasks(story.id, col)];
+      const newTasks = [...props.getTasks(story.id, col)];
+      if (!cellLists.value[key]) {
+        cellLists.value[key] = newTasks;
+      } else {
+        // Mutate existing array in-place so VueDraggable's v-model reference stays valid
+        const existing = cellLists.value[key]!;
+        existing.length = 0;
+        existing.push(...newTasks);
+      }
     }
   }
 }
 
-// Initial sync + watch for store changes
+// Initial sync + watch for store task changes
 syncCellLists();
-watch([() => props.stories, () => props.getTasks], syncCellLists, { deep: true });
+watch(() => boardStore.tasks, syncCellLists, { deep: true });
 </script>
 
 <template>
@@ -141,13 +150,29 @@ watch([() => props.stories, () => props.getTasks], syncCellLists, { deep: true }
                 fallback-class="sortable-fallback"
                 :fallback-tolerance="3"
                 @end="
-                  (e: any) => {
-                    const taskId = e.item.getAttribute('data-task-id');
-                    if (taskId) {
-                      const newCol = col;
-                      const newStoryId = story.id;
-                      const insertIndex = e.newIndex;
-                      $emit('taskReorder', taskId, newStoryId, newCol, insertIndex);
+                  async (e: any) => {
+                    const sourceKey = cellKey(story.id, col);
+                    const sourceTasks = cellLists[sourceKey] ?? [];
+
+                    // Find target cell from DOM
+                    const targetTd = e.to.closest('td[data-story-id]');
+                    const targetStoryId = targetTd?.dataset.storyId;
+                    const targetCol = targetTd?.dataset.column;
+
+                    if (!targetStoryId || !targetCol) return;
+
+                    const targetKey = cellKey(targetStoryId, targetCol);
+
+                    if (e.to === e.from) {
+                      // Intra-cell reorder — save only this cell
+                      await boardStore.saveCell(story.id, col, sourceTasks);
+                    } else {
+                      // Cross-cell move — save both source and target
+                      const targetTasks = cellLists[targetKey] ?? [];
+                      await boardStore.saveBothCells(
+                        story.id, col, sourceTasks,
+                        targetStoryId, targetCol, targetTasks,
+                      );
                     }
                   }
                 "
@@ -209,7 +234,7 @@ watch([() => props.stories, () => props.getTasks], syncCellLists, { deep: true }
   </div>
 </template>
 
-<style>
+<style scoped>
 /* Global styles for SortableJS elements (not scoped, since dragged elements move in DOM) */
 .sortable-ghost {
   opacity: 0.4 !important;

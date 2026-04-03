@@ -5,7 +5,6 @@ import BoardTable from "@/components/BoardTable.vue";
 import TaskDialog from "@/components/TaskDialog.vue";
 import { useBoardTitle } from "@/composables/useBoardTitle";
 import { useStoryManagement } from "@/composables/useStoryManagement";
-import { useDragAndDrop } from "@/composables/useDragAndDrop";
 import type { TaskRecord } from "@/db/db";
 
 const props = defineProps<{ boardId: string }>();
@@ -23,8 +22,6 @@ const {
 
 const { isAddingStory, newStoryTitle, startAddStory, addStory, cancelAddStory } =
   useStoryManagement(boardStore);
-
-const { handleSortEnd } = useDragAndDrop(boardStore);
 
 const addTaskStoryId = ref<string | null>(null);
 
@@ -46,15 +43,6 @@ async function handleStoryTitleUpdate(id: string, title: string) {
 
 async function handleStoryDelete(id: string) {
   await boardStore.deleteStory(id);
-}
-
-async function handleTaskReorder(
-  taskId: string,
-  storyId: string,
-  column: TaskRecord["column"],
-  insertIndex: number,
-) {
-  await handleSortEnd(taskId, storyId, column, insertIndex);
 }
 
 onMounted(async () => {
@@ -104,7 +92,6 @@ onMounted(async () => {
       @start-add-story="startAddStory"
       @add-story="addStory"
       @cancel-add-story="cancelAddStory"
-      @task-reorder="handleTaskReorder"
       @story-title-update="handleStoryTitleUpdate"
       @story-delete="handleStoryDelete"
     />
