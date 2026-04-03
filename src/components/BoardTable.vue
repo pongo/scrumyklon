@@ -170,8 +170,12 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
                       // Cross-cell move — save both source and target
                       const targetTasks = cellLists[targetKey] ?? [];
                       await boardStore.saveBothCells(
-                        story.id, col, sourceTasks,
-                        targetStoryId, targetCol, targetTasks,
+                        story.id,
+                        col,
+                        sourceTasks,
+                        targetStoryId,
+                        targetCol,
+                        targetTasks,
                       );
                     }
                   }
@@ -235,7 +239,6 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
 </template>
 
 <style scoped>
-/* Global styles for SortableJS elements (not scoped, since dragged elements move in DOM) */
 .sortable-ghost {
   opacity: 0.4 !important;
   background: repeating-linear-gradient(
@@ -245,18 +248,18 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
     rgba(59, 130, 246, 0.15) 6px,
     rgba(59, 130, 246, 0.15) 12px
   ) !important;
-  border: 2px dashed rgba(59, 130, 246, 0.5) !important;
-  border-radius: 6px !important;
-  min-height: 60px;
+  /* border: 2px dashed rgba(59, 130, 246, 0.5) !important; */
+  /* border-radius: 6px !important; */
+  outline: 2px dashed rgba(59, 130, 246, 0.5) !important;
+  /* min-height: 60px; */
   box-shadow: none !important;
 }
 
-.sortable-chosen {
+/* .sortable-chosen {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
+} */
 
 .sortable-fallback {
-  cursor: grabbing !important;
   opacity: 0.8;
 }
 </style>

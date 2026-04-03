@@ -29,7 +29,7 @@ function closeEdit() {
 
 <template>
   <div
-    class="group relative flex w-35 cursor-grab flex-col justify-between rounded-sm border border-gray-200 px-2 py-2 text-center shadow-sm dark:border-gray-500"
+    class="group relative flex w-35 cursor-default flex-col justify-between rounded-sm border border-gray-200 px-2 py-2 text-center shadow-sm dark:border-gray-500"
     :style="{ backgroundColor: task.assignee ? generatePastelColor(task.assignee) : '#fff' }"
     :data-task-id="task.id"
     @mouseenter="isHovered = true"
