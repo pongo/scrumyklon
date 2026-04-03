@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, nextTick } from "vue";
+import { onMounted, ref, nextTick, watch } from "vue";
 import { useBoardStore } from "@/stores/board";
 import StoryCard from "@/components/StoryCard.vue";
 import TaskCard from "@/components/TaskCard.vue";
@@ -18,6 +18,15 @@ const isAddingStory = ref(false);
 const newStoryTitle = ref("");
 const dragOverCell = ref<string | null>(null); // key: "storyId:column"
 const addTaskStoryId = ref<string | null>(null);
+
+watch(
+  () => boardStore.currentBoard?.title,
+  (title) => {
+    document.title = title ? `${title} - Scrumyklon` : "Scrumyklon";
+  },
+  { immediate: true },
+);
+
 const storyInputRef = ref<HTMLInputElement | null>(null);
 
 function startEditingTitle() {
