@@ -82,9 +82,21 @@ export const useBoardStore = defineStore("board", () => {
   }
 
   async function updateStoryTitle(storyId: string, title: string): Promise<void> {
-    await storiesApi.updateStory(storyId, { title });
     const story = stories.value.find((s) => s.id === storyId);
+    const previousTitle = story?.title;
+    
+    // Optimistic update
     if (story) story.title = title;
+    
+    try {
+      await storiesApi.updateStory(storyId, { title });
+    } catch (error) {
+      // Rollback on error
+      if (story && previousTitle !== undefined) {
+        story.title = previousTitle;
+      }
+      throw error;
+    }
   }
 
   async function deleteStory(storyId: string): Promise<void> {
