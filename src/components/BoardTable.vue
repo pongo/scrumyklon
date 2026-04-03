@@ -239,8 +239,10 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
 </template>
 
 <style scoped>
+@reference "tailwindcss";
+
 .sortable-ghost {
-  opacity: 0.4 !important;
+  @apply opacity-40 outline-2 outline-dashed outline-blue-400/50;
   background: repeating-linear-gradient(
     45deg,
     transparent,
@@ -248,18 +250,10 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
     rgba(59, 130, 246, 0.15) 6px,
     rgba(59, 130, 246, 0.15) 12px
   ) !important;
-  /* border: 2px dashed rgba(59, 130, 246, 0.5) !important; */
-  /* border-radius: 6px !important; */
-  outline: 2px dashed rgba(59, 130, 246, 0.5) !important;
-  /* min-height: 60px; */
   box-shadow: none !important;
 }
 
-/* .sortable-chosen {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-} */
-
 .sortable-fallback {
-  opacity: 0.8;
+  @apply opacity-80;
 }
 </style>
