@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useBoardStore } from "@/stores/board";
+import { generatePastelColor } from "@/utils/pastelColor";
 import { Check, X } from "@lucide/vue";
 import type { TaskRecord } from "@/db/db";
 
@@ -22,7 +23,6 @@ const textareaRef = ref<HTMLTextAreaElement | null>(null);
 
 onMounted(() => {
   textareaRef.value?.focus();
-  // Select all text if editing
   if (props.mode === "edit") {
     textareaRef.value?.select();
   }
@@ -65,7 +65,8 @@ function handleKeydown(e: KeyboardEvent) {
   <Teleport to="body">
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/20" @click="handleCancel">
       <div
-        class="w-full max-w-sm rounded border-2 border-gray-800 bg-white p-0 shadow-xl dark:border-gray-600 dark:bg-gray-800"
+        class="w-full max-w-sm rounded border-2 border-gray-800 bg-white p-0 shadow-xl transition-colors dark:border-gray-600"
+        :style="assignee.trim() ? { backgroundColor: generatePastelColor(assignee) } : {}"
         @click.stop
       >
         <!-- Title Area -->
@@ -76,22 +77,22 @@ function handleKeydown(e: KeyboardEvent) {
             @keydown="handleKeydown"
             rows="3"
             placeholder=""
-            class="w-full resize-none border-none bg-transparent text-center text-lg font-medium text-gray-800 outline-none dark:text-gray-100"
+            class="w-full resize-none border-none bg-transparent text-center text-lg font-medium text-gray-800 outline-none"
           />
         </div>
 
         <!-- Assignee Input -->
-        <div class="border-t border-gray-200 px-3 py-2 dark:border-gray-700">
+        <div class="border-t border-gray-200/60 px-3 py-2">
           <input
             v-model="assignee"
             type="text"
             placeholder="UNASSIGNED"
-            class="w-full rounded-sm border border-gray-300 bg-white px-2 py-1 text-sm text-gray-600 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+            class="w-full rounded-sm border border-gray-300/60 bg-white/80 px-2 py-1 text-sm text-gray-600 outline-none focus:border-blue-500"
           />
         </div>
 
         <!-- Actions -->
-        <div class="flex border-t border-gray-200 dark:border-gray-700">
+        <div class="flex border-t border-gray-200/60">
           <button
             @click="handleSave"
             :disabled="isSaving || !title.trim()"
