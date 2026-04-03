@@ -51,9 +51,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="boardStore.loading" class="flex min-h-screen items-center justify-center">
-    <p class="text-gray-500">Loading board...</p>
-  </div>
+  <div v-if="boardStore.loading" class="flex min-h-screen items-center justify-center"></div>
 
   <div
     v-else-if="boardStore.currentBoard"
