@@ -76,17 +76,17 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
 
       <!-- Header -->
       <thead>
-        <tr class="bg-white dark:bg-gray-800">
+        <tr class="bg-white">
           <th
-            class="border-b border-r border-gray-200 bg-white px-3 py-3 text-center text-sm font-semibold uppercase tracking-wide text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500"
+            class="border-b border-r border-gray-200 bg-white px-3 py-3 text-center text-sm font-semibold uppercase tracking-wide text-gray-400"
           >
             Stories
           </th>
-          <th class="border-b border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800" />
+          <th class="border-b border-r border-gray-200 bg-white" />
           <th
             v-for="col in columns"
             :key="col"
-            class="border-b border-r border-gray-200 bg-white px-3 py-3 text-center text-sm font-semibold text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 last:border-r-0"
+            class="border-b border-r border-gray-200 bg-white px-3 py-3 text-center text-sm font-semibold text-gray-400 last:border-r-0"
           >
             {{ columnLabels[col] }}
           </th>
@@ -101,7 +101,7 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
         >
           <!-- Story Cell -->
           <td
-            class="border-b border-r border-gray-200 bg-white p-0 align-top dark:border-gray-700 dark:bg-gray-800"
+            class="border-b border-r border-gray-200 bg-white p-0 align-top"
             style="height: 1px"
           >
             <div class="h-full">
@@ -115,11 +115,11 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
 
           <!-- Add Task Button Cell -->
           <td
-            class="border-b border-r border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800"
+            class="border-b border-r border-gray-200 bg-white p-2"
             @click="emit('addTask', story.id)"
           >
             <button
-              class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+              class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
               title="Add Task"
             >
               <Plus class="h-4 w-4" />
@@ -130,7 +130,7 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
           <td
             v-for="col in columns"
             :key="col"
-            class="relative border-b border-r border-gray-200 bg-gray-50 p-2 align-top dark:border-gray-700 dark:bg-gray-900 last:border-r-0"
+            class="relative border-b border-r border-gray-200 bg-gray-50 p-2 align-top last:border-r-0"
             :data-story-id="story.id"
             :data-column="col"
             style="height: 1px"
@@ -192,7 +192,7 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
       <!-- New Story Row -->
       <tfoot>
         <tr>
-          <td class="border-b border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+          <td class="border-b border-r border-gray-200 bg-white">
             <StoryForm
               v-if="isAddingStory"
               :initial-title="newStoryTitle"
@@ -202,16 +202,16 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
             <button
               v-else
               @click="emit('startAddStory')"
-              class="flex py-4 w-full items-center justify-center text-sm text-gray-400 underline hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 skip-ink-none"
+              class="flex py-4 w-full items-center justify-center text-sm text-gray-400 underline hover:text-gray-600 skip-ink-none"
             >
               New Story
             </button>
           </td>
-          <td class="border-b border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800" />
+          <td class="border-b border-r border-gray-200 bg-white" />
           <td
             v-for="col in columns"
             :key="col"
-            class="border-b border-r border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900 last:border-r-0"
+            class="border-b border-r border-gray-200 bg-gray-50 last:border-r-0"
           />
         </tr>
       </tfoot>

@@ -38,11 +38,11 @@ function handleKeydown(e: KeyboardEvent) {
 
 <template>
   <div
-    class="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900"
+    class="flex min-h-screen items-center justify-center bg-gray-50"
   >
     <div class="w-full max-w-md px-4">
       <h1
-        class="mb-8 text-center text-3xl font-bold text-gray-800 dark:text-gray-100"
+        class="mb-8 text-center text-3xl font-bold text-gray-800"
       >
         Scrumyklon
       </h1>
@@ -53,7 +53,7 @@ function handleKeydown(e: KeyboardEvent) {
           @keydown="handleKeydown"
           type="text"
           placeholder="Board title"
-          class="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-gray-800 shadow-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-blue-400"
+          class="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-gray-800 shadow-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           :disabled="isCreating"
         />
         <button

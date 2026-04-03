@@ -29,7 +29,7 @@ function closeEdit() {
 
 <template>
   <div
-    class="group relative flex w-35 cursor-default flex-col justify-between rounded-sm border border-gray-200 px-2 py-2 text-center shadow-sm dark:border-gray-500"
+    class="group relative flex w-35 cursor-default flex-col justify-between rounded-sm border border-gray-200 px-2 py-2 text-center shadow-sm"
     :style="{ backgroundColor: task.assignee ? generatePastelColor(task.assignee) : '#fff' }"
     :data-task-id="task.id"
     @mouseenter="isHovered = true"
@@ -48,7 +48,7 @@ function closeEdit() {
 
     <!-- Task Title -->
     <p
-      class="whitespace-pre-wrap text-xs font-medium text-gray-800 dark:text-gray-900"
+      class="whitespace-pre-wrap text-xs font-medium text-gray-800"
       :class="[task.assignee ? 'pb-5' : '']"
     >
       {{ task.title }}

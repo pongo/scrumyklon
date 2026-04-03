@@ -53,7 +53,7 @@ function handleKeydown(e: KeyboardEvent) {
       @keydown="handleKeydown"
       @blur="handleSubmit"
       type="text"
-      class="w-full rounded-sm border border-blue-400 px-2 py-1.5 text-sm outline-none dark:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
+      class="w-full rounded-sm border border-blue-400 px-2 py-1.5 text-sm outline-none"
     />
     <div class="flex gap-1">
       <button

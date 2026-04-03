@@ -91,7 +91,7 @@ function handleKeydown(e: KeyboardEvent) {
       @click="handleOverlayClick"
     >
       <div
-        class="w-full max-w-sm rounded border-2 border-gray-800 bg-white p-0 shadow-xl transition-colors dark:border-gray-600"
+        class="w-full max-w-sm rounded border-2 border-gray-800 bg-white p-0 shadow-xl transition-colors"
         :style="assignee.trim() ? { backgroundColor: generatePastelColor(assignee) } : {}"
         @click.stop
         @mousedown.stop

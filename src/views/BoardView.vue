@@ -55,11 +55,11 @@ onMounted(async () => {
 
   <div
     v-else-if="boardStore.currentBoard"
-    class="flex h-screen flex-col overflow-hidden bg-gray-50 dark:bg-gray-900"
+    class="flex h-screen flex-col overflow-hidden bg-gray-50"
   >
     <!-- Board Header -->
     <header
-      class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-800"
+      class="border-b border-gray-200 bg-white px-6 py-4"
     >
       <div v-if="isEditingTitle">
         <input
@@ -69,11 +69,11 @@ onMounted(async () => {
           @keyup.enter="($event.target as HTMLInputElement).blur()"
           @keydown="handleTitleKeydown"
           type="text"
-          class="rounded border border-gray-300 px-2 py-1 text-lg font-semibold outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 field-sizing-content min-w-10"
+          class="rounded border border-gray-300 px-2 py-1 text-lg font-semibold outline-none focus:border-blue-500 field-sizing-content min-w-10"
           autofocus
         />
       </div>
-      <h1 v-else class="text-xl font-semibold text-gray-800 dark:text-gray-100">
+      <h1 v-else class="text-xl font-semibold text-gray-800">
         <span @dblclick="startEditingTitle" title="Double click to edit">{{
           boardStore.currentBoard.title
         }}</span>
