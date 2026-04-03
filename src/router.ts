@@ -2,7 +2,33 @@ import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [],
+  routes: [
+    {
+      path: "/",
+      name: "home",
+      redirect: "/new",
+      beforeEnter: async (_to, _from, next) => {
+        const boardsApi = await import("@/db/boards");
+        const boards = await boardsApi.getAllBoards();
+        if (boards.length > 0 && boards[0]) {
+          next({ name: "board", params: { boardId: boards[0].id } });
+        } else {
+          next({ name: "new-board" });
+        }
+      },
+    },
+    {
+      path: "/new",
+      name: "new-board",
+      component: () => import("@/views/NewBoard.vue"),
+    },
+    {
+      path: "/:boardId",
+      name: "board",
+      component: () => import("@/views/BoardView.vue"),
+      props: true,
+    },
+  ],
 });
 
 export default router;
