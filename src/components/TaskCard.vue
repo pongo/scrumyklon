@@ -52,7 +52,7 @@ function handleDragStart(e: DragEvent) {
     </button>
 
     <!-- Task Title -->
-    <p class="text-xs font-medium text-gray-800 dark:text-gray-900">
+    <p class="whitespace-pre-wrap text-xs font-medium text-gray-800 dark:text-gray-900">
       {{ task.title }}
     </p>
 
