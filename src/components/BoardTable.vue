@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch, computed } from "vue";
+import { VueDraggable } from "vue-draggable-plus";
 import StoryCard from "@/components/StoryCard.vue";
 import TaskCard from "@/components/TaskCard.vue";
 import { Check, Plus, X } from "@lucide/vue";
@@ -8,7 +9,6 @@ import type { TaskRecord, StoryRecord } from "@/db/db";
 const props = defineProps<{
   stories: StoryRecord[];
   isAddingStory: boolean;
-  dragOverCell: string | null;
   getTasks: (storyId: string, column: TaskRecord["column"]) => TaskRecord[];
 }>();
 
@@ -17,10 +17,9 @@ const emit = defineEmits<{
   startAddStory: [];
   addStory: [];
   cancelAddStory: [];
-  drop: [e: DragEvent, storyId: string, column: TaskRecord["column"]];
-  dragEnter: [e: DragEvent, key: string];
   storyTitleUpdate: [id: string, title: string];
   storyDelete: [id: string];
+  taskReorder: [taskId: string, storyId: string, column: TaskRecord["column"], insertIndex: number];
 }>();
 
 const storyInputRef = ref<HTMLInputElement | null>(null);
@@ -38,6 +37,23 @@ const columns: TaskRecord["column"][] = ["TO_DO", "IN_PROGRESS", "VERIFY", "DONE
 function cellKey(storyId: string, column: TaskRecord["column"]) {
   return `${storyId}:${column}`;
 }
+
+// Each cell gets its own mutable array that vue-draggable can reorder
+const cellLists = ref<Record<string, TaskRecord[]>>({});
+
+// Sync cellLists with store data
+function syncCellLists() {
+  for (const story of props.stories) {
+    for (const col of columns) {
+      const key = cellKey(story.id, col);
+      cellLists.value[key] = [...props.getTasks(story.id, col)];
+    }
+  }
+}
+
+// Initial sync + watch for store changes
+syncCellLists();
+watch([() => props.stories, () => props.getTasks], syncCellLists, { deep: true });
 </script>
 
 <template>
@@ -104,27 +120,44 @@ function cellKey(storyId: string, column: TaskRecord["column"]) {
             </button>
           </td>
 
-          <!-- Task Cells -->
+          <!-- Task Cells with VueDraggable -->
           <td
             v-for="col in columns"
             :key="col"
-            class="relative border-r border-gray-200 bg-gray-50 p-2 transition-colors dark:border-gray-700 dark:bg-gray-900 last:border-r-0"
-            :class="dragOverCell === cellKey(story.id, col) ? 'bg-gray-200 dark:bg-gray-700' : ''"
+            class="relative border-r border-gray-200 bg-gray-50 p-2 align-top dark:border-gray-700 dark:bg-gray-900 last:border-r-0"
             :data-story-id="story.id"
             :data-column="col"
-            @dragover.prevent
-            @dragenter="emit('dragEnter', $event, cellKey(story.id, col))"
-            @drop="emit('drop', $event, story.id, col)"
+            style="height: 1px"
           >
-            <div class="flex flex-wrap gap-2">
-              <TaskCard
-                v-for="task in props.getTasks(story.id, col)"
-                :key="task.id"
-                :task="task"
-                @dragover.prevent
-                @dragenter.stop="emit('dragEnter', $event, cellKey(story.id, col))"
-                @drop.stop.prevent="emit('drop', $event, story.id, col)"
-              />
+            <div class="flex h-full flex-col">
+              <VueDraggable
+                :key="cellKey(story.id, col)"
+                v-model="cellLists[cellKey(story.id, col)]!"
+                :group="{ name: 'tasks', pull: true, put: true }"
+                class="flex flex-1 flex-wrap content-start gap-2"
+                :animation="150"
+                ghost-class="sortable-ghost"
+                chosen-class="sortable-chosen"
+                fallback-class="sortable-fallback"
+                :fallback-tolerance="3"
+                @end="
+                  (e: any) => {
+                    const taskId = e.item.getAttribute('data-task-id');
+                    if (taskId) {
+                      const newCol = col;
+                      const newStoryId = story.id;
+                      const insertIndex = e.newIndex;
+                      $emit('taskReorder', taskId, newStoryId, newCol, insertIndex);
+                    }
+                  }
+                "
+              >
+                <TaskCard
+                  v-for="task in cellLists[cellKey(story.id, col)]"
+                  :key="task.id"
+                  :task="task"
+                />
+              </VueDraggable>
             </div>
           </td>
         </tr>
@@ -175,3 +208,30 @@ function cellKey(storyId: string, column: TaskRecord["column"]) {
     </table>
   </div>
 </template>
+
+<style>
+/* Global styles for SortableJS elements (not scoped, since dragged elements move in DOM) */
+.sortable-ghost {
+  opacity: 0.4 !important;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 6px,
+    rgba(59, 130, 246, 0.15) 6px,
+    rgba(59, 130, 246, 0.15) 12px
+  ) !important;
+  border: 2px dashed rgba(59, 130, 246, 0.5) !important;
+  border-radius: 6px !important;
+  min-height: 60px;
+  box-shadow: none !important;
+}
+
+.sortable-chosen {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.sortable-fallback {
+  cursor: grabbing !important;
+  opacity: 0.8;
+}
+</style>

@@ -49,6 +49,7 @@ export async function moveTask(
   taskId: string,
   newStoryId: string,
   newColumn: TaskColumn,
+  insertIndex?: number,
 ): Promise<void> {
   const db = await getDB();
   const task = await db.get("tasks", taskId);
@@ -71,11 +72,16 @@ export async function moveTask(
 
   targetTasks.sort((a, b) => a.order - b.order);
 
-  // Update task location and append
+  // Update task location and insert at specific index (or append)
   task.storyId = newStoryId;
   task.column = newColumn;
-  task.order = targetTasks.length;
-  targetTasks.push(task);
+  const index = insertIndex ?? targetTasks.length;
+  targetTasks.splice(index, 0, task);
+
+  // Reassign order based on new position
+  for (let i = 0; i < targetTasks.length; i++) {
+    targetTasks[i]!.order = i;
+  }
 
   // Use idb's transaction pattern: open tx, do all puts in a Promise.all
   const tx = db.transaction("tasks", "readwrite");
@@ -90,12 +96,12 @@ export async function moveTask(
 
   // Fix old location if different
   if (!sameLocation) {
-    oldLocationTasks.sort((a, b) => a.order - b.order);
-    for (let i = 0; i < oldLocationTasks.length; i++) {
-      if (oldLocationTasks[i]!.id !== taskId) {
-        oldLocationTasks[i]!.order = i;
-        writePromises.push(store.put(oldLocationTasks[i]!));
-      }
+    const reorderedOldTasks = oldLocationTasks
+      .filter((t) => t.id !== taskId)
+      .sort((a, b) => a.order - b.order);
+    for (let i = 0; i < reorderedOldTasks.length; i++) {
+      reorderedOldTasks[i]!.order = i;
+      writePromises.push(store.put(reorderedOldTasks[i]!));
     }
   }
 

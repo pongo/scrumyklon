@@ -25,20 +25,13 @@ function startEdit() {
 function closeEdit() {
   isEditing.value = false;
 }
-
-function handleDragStart(e: DragEvent) {
-  e.dataTransfer?.setData("text/plain", props.task.id);
-  e.dataTransfer!.effectAllowed = "move";
-}
 </script>
 
 <template>
   <div
-    class="group relative flex w-35 cursor-default flex-col justify-between rounded-xs shadow-sm px-2 py-2 text-center dark:border-gray-500"
-    _class="group relative flex w-35 cursor-default flex-col justify-between rounded-sm border border-gray-200 px-2 py-2 text-center shadow-sm dark:border-gray-500"
+    class="group relative flex w-35 cursor-grab flex-col justify-between rounded-sm border border-gray-200 px-2 py-2 text-center shadow-sm dark:border-gray-500"
     :style="{ backgroundColor: task.assignee ? generatePastelColor(task.assignee) : '#fff' }"
-    draggable="true"
-    @dragstart="handleDragStart"
+    :data-task-id="task.id"
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"
     @dblclick="startEdit"

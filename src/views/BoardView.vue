@@ -24,7 +24,7 @@ const {
 const { isAddingStory, newStoryTitle, startAddStory, addStory, cancelAddStory } =
   useStoryManagement(boardStore);
 
-const { dragOverCell, cellKey, handleDrop, handleDragEnter } = useDragAndDrop(boardStore);
+const { handleSortEnd } = useDragAndDrop(boardStore);
 
 const addTaskStoryId = ref<string | null>(null);
 
@@ -46,6 +46,15 @@ async function handleStoryTitleUpdate(id: string, title: string) {
 
 async function handleStoryDelete(id: string) {
   await boardStore.deleteStory(id);
+}
+
+async function handleTaskReorder(
+  taskId: string,
+  storyId: string,
+  column: TaskRecord["column"],
+  insertIndex: number,
+) {
+  await handleSortEnd(taskId, storyId, column, insertIndex);
 }
 
 onMounted(async () => {
@@ -90,14 +99,12 @@ onMounted(async () => {
       v-model:new-story-title="newStoryTitle"
       :stories="boardStore.stories"
       :is-adding-story="isAddingStory"
-      :drag-over-cell="dragOverCell"
       :get-tasks="getTasks"
       @add-task="openAddTask"
       @start-add-story="startAddStory"
       @add-story="addStory"
       @cancel-add-story="cancelAddStory"
-      @drop="handleDrop"
-      @drag-enter="handleDragEnter"
+      @task-reorder="handleTaskReorder"
       @story-title-update="handleStoryTitleUpdate"
       @story-delete="handleStoryDelete"
     />

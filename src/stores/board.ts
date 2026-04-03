@@ -155,12 +155,13 @@ export const useBoardStore = defineStore("board", () => {
     taskId: string,
     newStoryId: string,
     newColumn: TaskRecord["column"],
+    insertIndex?: number,
   ): Promise<void> {
     const task = tasks.value.find((t) => t.id === taskId);
     if (!task) return;
 
     // Persist to DB first (no reactive changes during drag)
-    await tasksApi.moveTask(taskId, newStoryId, newColumn);
+    await tasksApi.moveTask(taskId, newStoryId, newColumn, insertIndex);
 
     // Then update reactively
     if (currentBoard.value) {
