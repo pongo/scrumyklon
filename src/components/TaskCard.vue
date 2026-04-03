@@ -57,7 +57,7 @@ function handleDragStart(e: DragEvent) {
     </p>
 
     <!-- Assignee -->
-    <div v-if="task.assignee" class="mt-1 flex items-center gap-0.5 text-xs text-gray-400">
+    <div v-if="task.assignee" class="mt-1 flex items-center gap-0.5 text-xs text-gray-600">
       <User class="h-2.5 w-2.5" />
       <span>{{ task.assignee }}</span>
     </div>
