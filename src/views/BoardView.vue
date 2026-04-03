@@ -3,7 +3,8 @@ import { onMounted, ref } from "vue";
 import { useBoardStore } from "@/stores/board";
 import StoryCard from "@/components/StoryCard.vue";
 import TaskCard from "@/components/TaskCard.vue";
-import { Check, X } from "@lucide/vue";
+import TaskDialog from "@/components/TaskDialog.vue";
+import { Check, Plus, X } from "@lucide/vue";
 import type { TaskRecord } from "@/db/db";
 
 const props = defineProps<{ boardId: string }>();
@@ -13,6 +14,15 @@ const boardStore = useBoardStore();
 const isAddingStory = ref(false);
 const newStoryTitle = ref("");
 const dragOverCell = ref<string | null>(null); // key: "storyId:column"
+const addTaskStoryId = ref<string | null>(null);
+
+function openAddTask(storyId: string) {
+  addTaskStoryId.value = storyId;
+}
+
+function closeAddTask() {
+  addTaskStoryId.value = null;
+}
 
 const columnLabels: Record<TaskRecord["column"], string> = {
   TO_DO: "To Do",
@@ -91,10 +101,11 @@ function handleDragEnter(e: DragEvent, key: string) {
       <!-- Header Row -->
       <div class="w-full">
         <!-- Column Headers -->
-        <div class="sticky top-0 z-10 grid grid-cols-[200px_repeat(4,1fr)] border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+        <div class="sticky top-0 z-10 grid grid-cols-[200px_40px_repeat(4,1fr)] border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
           <div class="border-r border-gray-200 px-3 py-3 text-center text-sm font-semibold uppercase tracking-wide text-gray-400 dark:border-gray-700 dark:text-gray-500">
             Stories
           </div>
+          <div class="border-r border-gray-200" />
           <div
             v-for="col in columns"
             :key="col"
@@ -108,11 +119,21 @@ function handleDragEnter(e: DragEvent, key: string) {
         <div
           v-for="story in boardStore.stories"
           :key="story.id"
-          class="grid grid-cols-[200px_repeat(4,1fr)] border-b border-gray-200 dark:border-gray-700"
+          class="grid grid-cols-[200px_40px_repeat(4,1fr)] border-b border-gray-200 dark:border-gray-700"
         >
           <!-- Story Cell -->
           <div class="border-r border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800">
             <StoryCard :story="story" />
+          </div>
+
+          <!-- Add Task Button Cell -->
+          <div class="flex items-center justify-center border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+            <button
+              @click="openAddTask(story.id)"
+              class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+            >
+              <Plus class="h-4 w-4" />
+            </button>
           </div>
 
           <!-- Task Cells -->
@@ -141,7 +162,7 @@ function handleDragEnter(e: DragEvent, key: string) {
         </div>
 
         <!-- New Story Row -->
-        <div class="grid grid-cols-[200px_repeat(4,1fr)] border-b border-gray-200 dark:border-gray-700">
+        <div class="grid grid-cols-[200px_40px_repeat(4,1fr)] border-b border-gray-200 dark:border-gray-700">
           <div class="border-r border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800">
             <div v-if="isAddingStory" class="flex flex-col gap-1">
               <input
@@ -173,6 +194,8 @@ function handleDragEnter(e: DragEvent, key: string) {
               New Story
             </button>
           </div>
+          <!-- Empty add-task cell -->
+          <div class="border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800" />
           <!-- Empty cells for task columns -->
           <div
             v-for="col in columns"
@@ -187,4 +210,12 @@ function handleDragEnter(e: DragEvent, key: string) {
   <div v-else class="flex min-h-screen items-center justify-center">
     <p class="text-gray-500">Board not found</p>
   </div>
+
+  <!-- Add Task Dialog -->
+  <TaskDialog
+    v-if="addTaskStoryId"
+    :story-id="addTaskStoryId"
+    mode="create"
+    @close="closeAddTask"
+  />
 </template>

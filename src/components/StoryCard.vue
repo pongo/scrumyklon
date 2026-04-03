@@ -1,27 +1,16 @@
 <script setup lang="ts">
 import { useBoardStore } from "@/stores/board";
-import TaskDialog from "@/components/TaskDialog.vue";
-import { Plus, X } from "@lucide/vue";
-import { ref } from "vue";
+import { X } from "@lucide/vue";
 import type { StoryRecord } from "@/db/db";
 
 const props = defineProps<{ story: StoryRecord }>();
 
 const boardStore = useBoardStore();
-const showAddTask = ref(false);
 
 function handleDelete() {
   if (confirm("Delete this story and all its tasks?")) {
     boardStore.deleteStory(props.story.id);
   }
-}
-
-function openAddTask() {
-  showAddTask.value = true;
-}
-
-function closeAddTask() {
-  showAddTask.value = false;
 }
 </script>
 
@@ -41,21 +30,5 @@ function closeAddTask() {
     <span class="text-center text-sm font-medium text-gray-700 dark:text-gray-200">
       {{ story.title }}
     </span>
-
-    <!-- Add Task Button -->
-    <button
-      @click.stop="openAddTask"
-      class="ml-2 rounded-sm text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-600 dark:hover:text-gray-300"
-    >
-      <Plus class="h-4 w-4" />
-    </button>
-
-    <!-- Task Dialog -->
-    <TaskDialog
-      v-if="showAddTask"
-      :story-id="story.id"
-      mode="create"
-      @close="closeAddTask"
-    />
   </div>
 </template>
