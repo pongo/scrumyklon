@@ -3,8 +3,9 @@ import { ref, watch } from "vue";
 import { VueDraggable } from "vue-draggable-plus";
 import { useBoardStore } from "@/stores/board";
 import StoryCard from "@/components/StoryCard.vue";
+import StoryForm from "@/components/StoryForm.vue";
 import TaskCard from "@/components/TaskCard.vue";
-import { Check, Plus, X } from "@lucide/vue";
+import { Plus } from "@lucide/vue";
 import type { TaskRecord, StoryRecord } from "@/db/db";
 
 const props = defineProps<{
@@ -16,13 +17,12 @@ const props = defineProps<{
 const emit = defineEmits<{
   addTask: [storyId: string];
   startAddStory: [];
-  addStory: [];
+  addStory: [title: string];
   cancelAddStory: [];
   storyTitleUpdate: [id: string, title: string];
   storyDelete: [id: string];
 }>();
 
-const storyInputRef = ref<HTMLInputElement | null>(null);
 const newStoryTitle = defineModel<string>("newStoryTitle", { default: "" });
 
 const columnLabels: Record<TaskRecord["column"], string> = {
@@ -196,28 +196,13 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
       <tfoot>
         <tr class="border-b border-gray-200 dark:border-gray-700">
           <td class="border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
-            <div v-if="isAddingStory" class="flex flex-col gap-1 p-2">
-              <input
-                ref="storyInputRef"
-                v-model="newStoryTitle"
-                type="text"
-                class="w-full rounded-sm border border-blue-400 px-2 py-1.5 text-sm outline-none dark:border-blue-500 dark:bg-gray-700 dark:text-gray-100"
-              />
-              <div class="flex gap-1">
-                <button
-                  @click="emit('addStory')"
-                  class="flex flex-1 items-center justify-center rounded-sm bg-green-600 py-1 text-white hover:bg-green-700"
-                >
-                  <Check class="h-4 w-4" />
-                </button>
-                <button
-                  @click="emit('cancelAddStory')"
-                  class="flex flex-1 items-center justify-center rounded-sm bg-gray-500 py-1 text-white hover:bg-gray-600"
-                >
-                  <X class="h-4 w-4" />
-                </button>
-              </div>
-            </div>
+            <StoryForm
+              v-if="isAddingStory"
+              :initial-title="newStoryTitle"
+              autofocus
+              @submit="(title) => emit('addStory', title)"
+              @cancel="emit('cancelAddStory')"
+            />
             <button
               v-else
               @click="emit('startAddStory')"
