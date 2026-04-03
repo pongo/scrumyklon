@@ -34,9 +34,8 @@ function handleDragStart(e: DragEvent) {
 
 <template>
   <div
-    class="group relative rounded px-2 py-1.5 shadow-sm transition-shadow hover:shadow-md"
-    :style="{ backgroundColor: task.assignee ? generatePastelColor(task.assignee) : '#ffffff' }"
-    :class="task.assignee ? 'dark:bg-gray-700' : 'bg-white dark:bg-gray-700'"
+    class="group relative rounded-sm border border-gray-200 px-3 py-2 shadow-sm transition-shadow hover:shadow-md dark:border-gray-600"
+    :style="{ backgroundColor: task.assignee ? generatePastelColor(task.assignee) : undefined }"
     draggable="true"
     @dragstart="handleDragStart"
     @mouseenter="isHovered = true"
@@ -53,13 +52,13 @@ function handleDragStart(e: DragEvent) {
     </button>
 
     <!-- Task Title -->
-    <p class="pr-5 text-sm text-gray-700 dark:text-gray-200">
+    <p class="pr-5 text-sm font-medium text-gray-800 dark:text-gray-100">
       {{ task.title }}
     </p>
 
     <!-- Assignee -->
-    <p v-if="task.assignee" class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-      {{ task.assignee }}
+    <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+      {{ task.assignee || "UNASSIGNED" }}
     </p>
 
     <!-- Edit Dialog -->

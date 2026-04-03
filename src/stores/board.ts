@@ -137,28 +137,14 @@ export const useBoardStore = defineStore("board", () => {
     const task = tasks.value.find((t) => t.id === taskId);
     if (!task) return;
 
-    const oldStoryId = task.storyId;
-    const oldColumn = task.column;
-
+    // Persist to DB first (no reactive changes during drag)
     await tasksApi.moveTask(taskId, newStoryId, newColumn);
 
-    // Update the task in-place
-    task.storyId = newStoryId;
-    task.column = newColumn;
-
-    // Recalculate orders for both old and new locations
-    const [oldLocationTasks, newLocationTasks] = await Promise.all([
-      tasksApi.getTasksByStory(oldStoryId, oldColumn),
-      tasksApi.getTasksByStory(newStoryId, newColumn),
-    ]);
-
-    // Remove old tasks for affected locations and add updated ones
-    tasks.value = tasks.value.filter(
-      (t) =>
-        !(t.storyId === oldStoryId && t.column === oldColumn) &&
-        !(t.storyId === newStoryId && t.column === newColumn),
-    );
-    tasks.value.push(...oldLocationTasks, ...newLocationTasks);
+    // Then update reactively
+    if (currentBoard.value) {
+      const refreshed = await loadAllTasksForBoard(currentBoard.value.id);
+      tasks.value = refreshed;
+    }
   }
 
   async function loadAllBoards(): Promise<BoardRecord[]> {

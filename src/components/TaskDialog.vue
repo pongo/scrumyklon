@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useBoardStore } from "@/stores/board";
-import { generatePastelColor } from "@/utils/pastelColor";
+import { Check, X } from "@lucide/vue";
 import type { TaskRecord } from "@/db/db";
 
 const props = defineProps<{
@@ -18,17 +18,15 @@ const title = ref(props.mode === "edit" && props.task ? props.task.title : "");
 const assignee = ref(props.mode === "edit" && props.task ? props.task.assignee : "");
 const isSaving = ref(false);
 
-const inputRef = ref<HTMLInputElement | null>(null);
+const textareaRef = ref<HTMLTextAreaElement | null>(null);
 
 onMounted(() => {
-  inputRef.value?.focus();
+  textareaRef.value?.focus();
+  // Select all text if editing
+  if (props.mode === "edit") {
+    textareaRef.value?.select();
+  }
 });
-
-const previewColor = ref("#f0f0f0");
-
-function updatePreviewColor() {
-  previewColor.value = assignee.value ? generatePastelColor(assignee.value) : "#f0f0f0";
-}
 
 async function handleSave() {
   const trimmed = title.value.trim();
@@ -57,10 +55,7 @@ function handleCancel() {
 }
 
 function handleKeydown(e: KeyboardEvent) {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    handleSave();
-  } else if (e.key === "Escape") {
+  if (e.key === "Escape") {
     handleCancel();
   }
 }
@@ -68,76 +63,49 @@ function handleKeydown(e: KeyboardEvent) {
 
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/20" @click="handleCancel">
       <div
-        class="w-full max-w-sm rounded-lg bg-white p-4 shadow-lg dark:bg-gray-800"
+        class="w-full max-w-sm rounded border-2 border-gray-800 bg-white p-0 shadow-xl dark:border-gray-600 dark:bg-gray-800"
         @click.stop
       >
-        <h3 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-200">
-          {{ mode === "create" ? "New Task" : "Edit Task" }}
-        </h3>
+        <!-- Title Area -->
+        <div class="p-3">
+          <textarea
+            ref="textareaRef"
+            v-model="title"
+            @keydown="handleKeydown"
+            rows="3"
+            placeholder=""
+            class="w-full resize-none border-none bg-transparent text-center text-lg font-medium text-gray-800 outline-none dark:text-gray-100"
+          />
+        </div>
 
-        <div class="flex flex-col gap-3">
-          <!-- Title -->
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
-              Title
-            </label>
-            <input
-              ref="inputRef"
-              v-model="title"
-              @keydown="handleKeydown"
-              type="text"
-              placeholder="Task title"
-              class="w-full rounded border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-            />
-          </div>
-
-          <!-- Assignee -->
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
-              Assignee
-            </label>
-            <input
-              v-model="assignee"
-              @input="updatePreviewColor"
-              @keydown="handleKeydown"
-              type="text"
-              placeholder="Assign to..."
-              class="w-full rounded border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-            />
-            <!-- Color Preview -->
-            <div
-              v-if="assignee"
-              class="mt-2 h-6 w-full rounded"
-              :style="{ backgroundColor: previewColor }"
-            />
-          </div>
+        <!-- Assignee Input -->
+        <div class="border-t border-gray-200 px-3 py-2 dark:border-gray-700">
+          <input
+            v-model="assignee"
+            type="text"
+            placeholder="UNASSIGNED"
+            class="w-full rounded-sm border border-gray-300 bg-white px-2 py-1 text-sm text-gray-600 outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+          />
         </div>
 
         <!-- Actions -->
-        <div class="mt-4 flex justify-end gap-2">
+        <div class="flex border-t border-gray-200 dark:border-gray-700">
+          <button
+            @click="handleSave"
+            :disabled="isSaving || !title.trim()"
+            class="flex flex-1 items-center justify-center gap-1 bg-green-600 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Check class="h-4 w-4" />
+            <span>{{ mode === "create" ? "Create" : "Save" }}</span>
+          </button>
           <button
             @click="handleCancel"
-            class="rounded px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+            class="flex flex-1 items-center justify-center gap-1 bg-gray-400 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-500"
           >
-            {{ mode === "create" ? "Cancel" : "Cancel" }}
-          </button>
-          <button
-            v-if="mode === 'edit'"
-            @click="handleSave"
-            :disabled="isSaving || !title.trim()"
-            class="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {{ isSaving ? "Saving..." : "Save" }}
-          </button>
-          <button
-            v-if="mode === 'create'"
-            @click="handleSave"
-            :disabled="isSaving || !title.trim()"
-            class="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {{ isSaving ? "Creating..." : "Create" }}
+            <X class="h-4 w-4" />
+            <span>Cancel</span>
           </button>
         </div>
       </div>

@@ -8,11 +8,13 @@ export async function getTasksByStory(
   column?: TaskColumn,
 ): Promise<TaskRecord[]> {
   const db = await getDB();
+  let result: TaskRecord[];
   if (column) {
-    return db.getAllFromIndex("tasks", "by-story-column", [storyId, column]);
+    result = await db.getAllFromIndex("tasks", "by-story-column", [storyId, column]);
+  } else {
+    result = await db.getAllFromIndex("tasks", "by-story", storyId);
   }
-  const all = await db.getAllFromIndex("tasks", "by-story", storyId);
-  return all.sort((a, b) => a.order - b.order);
+  return result.sort((a, b) => a.order - b.order);
 }
 
 export async function createTask(
@@ -47,7 +49,6 @@ export async function moveTask(
   taskId: string,
   newStoryId: string,
   newColumn: TaskColumn,
-  newOrder?: number,
 ): Promise<void> {
   const db = await getDB();
   const task = await db.get("tasks", taskId);
@@ -55,45 +56,49 @@ export async function moveTask(
 
   const oldStoryId = task.storyId;
   const oldColumn = task.column;
+  const sameLocation = oldStoryId === newStoryId && oldColumn === newColumn;
 
-  // Get tasks in both old and target locations
-  const [oldTasks, targetTasks] = await Promise.all([
+  // Read ALL data BEFORE any writes
+  const [oldLocationTasks, targetLocationTasks] = await Promise.all([
     getTasksByStory(oldStoryId, oldColumn),
-    getTasksByStory(newStoryId, newColumn),
+    sameLocation ? Promise.resolve<TaskRecord[]>([]) : getTasksByStory(newStoryId, newColumn),
   ]);
 
-  if (newOrder === undefined) {
-    // Append to end
-    task.order = targetTasks.length;
-  } else {
-    task.order = newOrder;
-    // Shift other tasks in target
-    for (const t of targetTasks) {
-      if (t.id !== taskId && t.order >= newOrder) {
-        t.order += 1;
+  // Build target task list
+  const targetTasks = sameLocation
+    ? oldLocationTasks.filter((t) => t.id !== taskId)
+    : targetLocationTasks;
+
+  targetTasks.sort((a, b) => a.order - b.order);
+
+  // Update task location and append
+  task.storyId = newStoryId;
+  task.column = newColumn;
+  task.order = targetTasks.length;
+  targetTasks.push(task);
+
+  // Use idb's transaction pattern: open tx, do all puts in a Promise.all
+  const tx = db.transaction("tasks", "readwrite");
+  const store = tx.objectStore("tasks");
+
+  const writePromises: Promise<string | void>[] = [];
+
+  // Write target tasks
+  for (const t of targetTasks) {
+    writePromises.push(store.put(t));
+  }
+
+  // Fix old location if different
+  if (!sameLocation) {
+    oldLocationTasks.sort((a, b) => a.order - b.order);
+    for (let i = 0; i < oldLocationTasks.length; i++) {
+      if (oldLocationTasks[i]!.id !== taskId) {
+        oldLocationTasks[i]!.order = i;
+        writePromises.push(store.put(oldLocationTasks[i]!));
       }
     }
   }
 
-  // Decrease order for tasks in old location
-  for (const t of oldTasks) {
-    if (t.id !== taskId && t.order > task.order) {
-      t.order -= 1;
-    }
-  }
-
-  task.storyId = newStoryId;
-  task.column = newColumn;
-
-  // Save all changes in a single transaction
-  const tx = db.transaction("tasks", "readwrite");
-  await tx.objectStore("tasks").put(task);
-  const allToUpdate = [
-    ...oldTasks.filter((t) => t.id !== taskId),
-    ...targetTasks.filter((t) => t.id !== taskId),
-  ];
-  for (const t of allToUpdate) {
-    await tx.objectStore("tasks").put(t);
-  }
-  await tx.done;
+  // Wait for all puts AND tx.done
+  await Promise.all([...writePromises, tx.done]);
 }
