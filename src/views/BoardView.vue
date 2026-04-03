@@ -21,16 +21,10 @@ const {
   handleKeydown: handleTitleKeydown,
 } = useBoardTitle(boardStore);
 
-const {
-  isAddingStory,
-  newStoryTitle,
-  startAddStory,
-  addStory,
-  cancelAddStory,
-} = useStoryManagement(boardStore);
+const { isAddingStory, newStoryTitle, startAddStory, addStory, cancelAddStory } =
+  useStoryManagement(boardStore);
 
-const { dragOverCell, cellKey, handleDrop, handleDragEnter } =
-  useDragAndDrop(boardStore);
+const { dragOverCell, cellKey, handleDrop, handleDragEnter } = useDragAndDrop(boardStore);
 
 const addTaskStoryId = ref<string | null>(null);
 
@@ -84,10 +78,7 @@ onMounted(async () => {
           autofocus
         />
       </div>
-      <h1
-        v-else
-        class="text-xl font-semibold text-gray-800 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300"
-      >
+      <h1 v-else class="text-xl font-semibold text-gray-800 dark:text-gray-100">
         <span @dblclick="startEditingTitle" title="Double click to edit">{{
           boardStore.currentBoard.title
         }}</span>

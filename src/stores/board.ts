@@ -59,8 +59,18 @@ export const useBoardStore = defineStore("board", () => {
 
   async function updateBoardTitle(title: string): Promise<void> {
     if (!currentBoard.value) return;
-    await boardsApi.updateBoard(currentBoard.value.id, { title });
+    const previousTitle = currentBoard.value.title;
+
+    // Optimistic update
     currentBoard.value.title = title;
+
+    try {
+      await boardsApi.updateBoard(currentBoard.value.id, { title });
+    } catch (error) {
+      // Rollback on error
+      currentBoard.value.title = previousTitle;
+      throw error;
+    }
   }
 
   async function deleteCurrentBoard(): Promise<void> {

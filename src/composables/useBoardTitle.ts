@@ -28,8 +28,6 @@ export function useBoardTitle(boardStore: ReturnType<typeof useBoardStore>) {
       isEditingTitle.value = false;
       return;
     }
-    // Optimistically update to prevent flicker
-    boardStore.currentBoard.title = trimmed;
     isEditingTitle.value = false;
     await boardStore.updateBoardTitle(trimmed);
   }

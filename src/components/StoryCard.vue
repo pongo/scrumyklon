@@ -92,7 +92,7 @@ function handleDelete() {
     <!-- Story Title -->
     <div
       v-else
-      class="text-center text-sm font-medium text-gray-700 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300"
+      class="text-center text-sm font-medium text-gray-700 dark:text-gray-200"
       @dblclick="startEditing"
       title="Double click to edit"
     >
