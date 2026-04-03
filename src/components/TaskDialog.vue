@@ -18,8 +18,21 @@ const boardStore = useBoardStore();
 const title = ref(props.mode === "edit" && props.task ? props.task.title : "");
 const assignee = ref(props.mode === "edit" && props.task ? props.task.assignee : "");
 const isSaving = ref(false);
+const overlayMousedown = ref(false);
 
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
+
+function handleOverlayMousedown() {
+  overlayMousedown.value = true;
+}
+
+function handleOverlayClick() {
+  // Only close if the mousedown also happened on the overlay
+  // (prevents closing when selecting text inside and releasing outside)
+  if (!overlayMousedown.value) return;
+  overlayMousedown.value = false;
+  handleCancel();
+}
 
 onMounted(() => {
   textareaRef.value?.focus();
@@ -67,11 +80,16 @@ function handleKeydown(e: KeyboardEvent) {
 
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/20" @click="handleCancel">
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/20"
+      @mousedown="handleOverlayMousedown"
+      @click="handleOverlayClick"
+    >
       <div
         class="w-full max-w-sm rounded border-2 border-gray-800 bg-white p-0 shadow-xl transition-colors dark:border-gray-600"
         :style="assignee.trim() ? { backgroundColor: generatePastelColor(assignee) } : {}"
         @click.stop
+        @mousedown.stop
       >
         <!-- Title Area -->
         <div class="p-3">
