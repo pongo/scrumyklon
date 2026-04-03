@@ -191,8 +191,8 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
 
       <!-- New Story Row -->
       <tfoot>
-        <tr class="border-b border-gray-200 dark:border-gray-700">
-          <td class="border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+        <tr>
+          <td class="border-b border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
             <StoryForm
               v-if="isAddingStory"
               :initial-title="newStoryTitle"
@@ -207,11 +207,11 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
               New Story
             </button>
           </td>
-          <td class="border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800" />
+          <td class="border-b border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800" />
           <td
             v-for="col in columns"
             :key="col"
-            class="border-r border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900 last:border-r-0"
+            class="border-b border-r border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900 last:border-r-0"
           />
         </tr>
       </tfoot>
@@ -226,7 +226,12 @@ thead th {
   position: sticky;
   top: 0;
   z-index: 10;
-  background-clip: padding-box;
+}
+
+tbody td,
+tfoot td {
+  position: relative;
+  z-index: 1;
 }
 
 .sortable-ghost {
