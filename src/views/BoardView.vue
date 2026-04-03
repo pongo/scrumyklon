@@ -119,8 +119,8 @@ function handleDragEnter(e: DragEvent, key: string) {
           <div
             v-for="col in columns"
             :key="col"
-            class="relative border-r border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-900 last:border-r-0"
-            :class="dragOverCell === cellKey(story.id, col) ? 'bg-blue-50 dark:bg-blue-900/20' : ''"
+            class="relative border-r border-gray-200 bg-gray-50 p-2 transition-colors dark:border-gray-700 dark:bg-gray-900 last:border-r-0"
+            :class="dragOverCell === cellKey(story.id, col) ? 'bg-gray-200 dark:bg-gray-700' : ''"
             :data-story-id="story.id"
             :data-column="col"
             @dragover.prevent
