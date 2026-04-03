@@ -56,7 +56,11 @@ function handleCancel() {
 
 function handleKeydown(e: KeyboardEvent) {
   if (e.key === "Escape") {
+    e.preventDefault();
     handleCancel();
+  } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    handleSave();
   }
 }
 </script>
@@ -87,6 +91,7 @@ function handleKeydown(e: KeyboardEvent) {
             v-model="assignee"
             type="text"
             placeholder="UNASSIGNED"
+            @keydown="handleKeydown"
             class="w-full rounded-sm border border-gray-300/60 bg-white/80 px-2 py-1 text-sm text-gray-600 outline-none focus:border-blue-500"
           />
         </div>
