@@ -138,10 +138,11 @@ function handleDragEnter(e: DragEvent, key: string) {
           <!-- Add Task Button Cell -->
           <div
             class="flex items-center justify-center border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
+            @click="openAddTask(story.id)"
           >
             <button
-              @click="openAddTask(story.id)"
               class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+              title="Add Task"
             >
               <Plus class="h-4 w-4" />
             </button>
