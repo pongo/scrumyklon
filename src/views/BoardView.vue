@@ -90,7 +90,9 @@ function handleDragEnter(e: DragEvent, key: string) {
     class="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900"
   >
     <!-- Board Header -->
-    <header class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-800">
+    <header
+      class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-800"
+    >
       <h1 class="text-xl font-semibold text-gray-800 dark:text-gray-100">
         {{ boardStore.currentBoard.title }}
       </h1>
@@ -101,8 +103,12 @@ function handleDragEnter(e: DragEvent, key: string) {
       <!-- Header Row -->
       <div class="w-full">
         <!-- Column Headers -->
-        <div class="sticky top-0 z-10 grid grid-cols-[200px_40px_repeat(4,1fr)] border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
-          <div class="border-r border-gray-200 px-3 py-3 text-center text-sm font-semibold uppercase tracking-wide text-gray-400 dark:border-gray-700 dark:text-gray-500">
+        <div
+          class="sticky top-0 z-10 grid grid-cols-[200px_40px_repeat(4,1fr)] border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
+        >
+          <div
+            class="border-r border-gray-200 px-3 py-3 text-center text-sm font-semibold uppercase tracking-wide text-gray-400 dark:border-gray-700 dark:text-gray-500"
+          >
             Stories
           </div>
           <div class="border-r border-gray-200" />
@@ -127,7 +133,9 @@ function handleDragEnter(e: DragEvent, key: string) {
           </div>
 
           <!-- Add Task Button Cell -->
-          <div class="flex items-center justify-center border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+          <div
+            class="flex items-center justify-center border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
+          >
             <button
               @click="openAddTask(story.id)"
               class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
@@ -162,7 +170,9 @@ function handleDragEnter(e: DragEvent, key: string) {
         </div>
 
         <!-- New Story Row -->
-        <div class="grid grid-cols-[200px_40px_repeat(4,1fr)] border-b border-gray-200 dark:border-gray-700">
+        <div
+          class="grid grid-cols-[200px_40px_repeat(4,1fr)] border-b border-gray-200 dark:border-gray-700"
+        >
           <div class="border-r border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800">
             <div v-if="isAddingStory" class="flex flex-col gap-1">
               <input
@@ -189,9 +199,9 @@ function handleDragEnter(e: DragEvent, key: string) {
             <button
               v-else
               @click="startAddStory"
-              class="w-full text-left text-sm text-blue-600 underline hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+              class="flex w-full items-center justify-center text-sm text-gray-400 underline hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 skip-ink-none"
             >
-              New Story
+              <span class="cursor-pointer">New Story</span>
             </button>
           </div>
           <!-- Empty add-task cell -->
