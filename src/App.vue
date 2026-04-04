@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { RouterView } from "vue-router";
-import { useVariants } from "@/composables/useVariants";
+import { provideAppVariants } from "./variants.ts";
 
-useVariants({
-  TaskCard: { key: "'", variants: [true, false] },
-  TaskWidth: { key: ";", variants: ["w-32", "w-35"] },
-});
+provideAppVariants();
 </script>
 
 <template>

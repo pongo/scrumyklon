@@ -1,68 +1,94 @@
-import { reactive, readonly, onUnmounted, getCurrentInstance } from "vue";
+import {
+  reactive,
+  readonly,
+  provide,
+  inject,
+  onUnmounted,
+  type InjectionKey,
+  type DeepReadonly,
+} from "vue";
 
-interface VariantConfig {
+interface VariantConfig<T extends readonly unknown[] = readonly unknown[]> {
   key: string;
-  variants: unknown[];
+  variants: T;
 }
 
 type VariantsSetup = Record<string, VariantConfig>;
 
-// singleton
-const variantsState = reactive<Record<string, unknown>>({});
-let isInitialized = false;
-let currentConfig: VariantsSetup | null = null;
+type InferState<T extends VariantsSetup> = {
+  [K in keyof T]: T[K]["variants"][number];
+};
 
-function shouldIgnoreTarget(target: EventTarget | null) {
+function shouldIgnoreTarget(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null;
   if (!el) return false;
   const tag = el.tagName;
   return el.isContentEditable || tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
 }
 
-function handleKeydown(event: KeyboardEvent) {
-  if (shouldIgnoreTarget(event.target)) return;
-  if (event.repeat) return;
-  if (!currentConfig) return;
+/**
+ * Creates a typed provider/consumer pair.
+ *
+ * @example
+ * // variants.ts
+ * export const { provideAppVariants, useAppVariants } = createVariants({
+ *   TaskCard:  { key: "1", variants: [true, false]    as const },
+ *   TaskWidth: { key: "2", variants: ["w-32", "w-35"] as const },
+ * });
+ *
+ * // App.vue — call once in setup()
+ * provideAppVariants();
+ *
+ * // Any descendant component
+ * const { variants } = useAppVariants();
+ * // variants.TaskCard  → boolean
+ * // variants.TaskWidth → "w-32" | "w-35"
+ */
+export function createVariants<T extends VariantsSetup>(config: T) {
+  // Each createVariants call gets its own unique key —
+  // multiple independent variant systems can coexist in the same app.
+  const injectionKey: InjectionKey<DeepReadonly<InferState<T>>> = Symbol("variants");
 
-  for (const [name, options] of Object.entries(currentConfig)) {
-    if (event.key === options.key) {
-      event.preventDefault();
-
-      const variantsArray = options.variants;
-      if (!variantsArray || variantsArray.length === 0) continue;
-
-      const currentValue = variantsState[name];
-      const currentIndex = variantsArray.indexOf(currentValue);
-      const nextIndex = (currentIndex + 1) % variantsArray.length;
-
-      variantsState[name] = variantsArray[nextIndex];
-    }
-  }
-}
-
-export function useVariants(config?: VariantsSetup) {
-  if (config && !isInitialized) {
-    isInitialized = true;
-    currentConfig = config;
+  function provideAppVariants(): void {
+    const state = reactive<Record<string, unknown>>({});
 
     for (const [name, options] of Object.entries(config)) {
-      if (options.variants && options.variants.length > 0) {
-        variantsState[name] = options.variants[0];
+      if (options.variants.length > 0) {
+        state[name] = options.variants[0];
+      }
+    }
+
+    function handleKeydown(event: KeyboardEvent): void {
+      if (shouldIgnoreTarget(event.target) || event.repeat) return;
+
+      for (const [name, options] of Object.entries(config)) {
+        if (event.key === options.key) {
+          event.preventDefault();
+          const arr = options.variants as unknown[];
+          if (arr.length === 0) continue;
+          const idx = arr.indexOf(state[name]);
+          state[name] = arr[(idx + 1) % arr.length];
+        }
       }
     }
 
     window.addEventListener("keydown", handleKeydown);
+    onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
 
-    if (getCurrentInstance()) {
-      onUnmounted(() => {
-        window.removeEventListener("keydown", handleKeydown);
-        isInitialized = false;
-        currentConfig = null;
-      });
-    }
+    provide(injectionKey, readonly(state) as DeepReadonly<InferState<T>>);
   }
 
-  return {
-    variants: readonly(variantsState),
-  };
+  function useAppVariants(): { variants: DeepReadonly<InferState<T>> } {
+    const variants = inject(injectionKey);
+
+    if (import.meta.env.DEV && variants === undefined) {
+      console.warn(
+        `[useAppVariants] Provider not found. Make sure provideAppVariants() is called in App.vue setup().`,
+      );
+    }
+
+    return { variants: variants as DeepReadonly<InferState<T>> };
+  }
+
+  return { provideAppVariants, useAppVariants };
 }
