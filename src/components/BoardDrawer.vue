@@ -12,8 +12,6 @@ const boardStore = useBoardStore();
 const router = useRouter();
 
 const boards = ref<BoardRecord[]>([]);
-const creating = ref(false);
-const newBoardTitle = ref("");
 
 watch(
   () => open,
@@ -22,21 +20,9 @@ watch(
   },
 );
 
-async function createBoard() {
-  const trimmed = newBoardTitle.value.trim();
-  if (!trimmed || creating.value) return;
-  creating.value = true;
-  try {
-    const id = await boardStore.createBoard(trimmed);
-    newBoardTitle.value = "";
-    boards.value = await boardStore.loadAllBoards();
-    router.push(`/${id}`);
-    emit("close");
-  } catch (e) {
-    console.error("Failed to create board:", e);
-  } finally {
-    creating.value = false;
-  }
+function navigateToCreate() {
+  router.push("/new");
+  emit("close");
 }
 
 async function deleteBoard(board: BoardRecord) {
@@ -48,13 +34,6 @@ async function deleteBoard(board: BoardRecord) {
   if (isCurrent) {
     emit("close");
     router.push("/new");
-  }
-}
-
-function handleCreateKeydown(e: KeyboardEvent) {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    createBoard();
   }
 }
 </script>
@@ -76,20 +55,11 @@ function handleCreateKeydown(e: KeyboardEvent) {
             </button>
           </div>
 
-          <!-- Create board -->
-          <div class="flex gap-2 border-b border-gray-200 px-4 py-2">
-            <input
-              v-model="newBoardTitle"
-              @keydown="handleCreateKeydown"
-              type="text"
-              placeholder="New board title"
-              class="flex-1 rounded border border-gray-300 px-2 py-1 text-sm outline-none focus:border-blue-500"
-              :disabled="creating"
-            />
+          <!-- Create board button -->
+          <div class="flex justify-center border-b border-gray-200 px-4 py-2">
             <button
-              @click="createBoard"
-              :disabled="creating || !newBoardTitle.trim()"
-              class="rounded bg-blue-600 px-2 py-1 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+              @click="navigateToCreate"
+              class="rounded p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
               title="Create new board"
             >
               <Plus class="size-4" />
