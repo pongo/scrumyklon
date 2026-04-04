@@ -3,22 +3,13 @@ import { onMounted, ref } from "vue";
 import { useBoardStore } from "@/stores/board";
 import BoardTable from "@/components/BoardTable.vue";
 import TaskDialog from "@/components/TaskDialog.vue";
-import { useBoardTitle } from "@/composables/useBoardTitle";
+import BoardHeader from "@/components/BoardHeader.vue";
 import { useStoryManagement } from "@/composables/useStoryManagement";
 import type { TaskRecord } from "@/db/db";
 
 const props = defineProps<{ boardId: string }>();
 
 const boardStore = useBoardStore();
-
-const {
-  isEditingTitle,
-  titleInput,
-  titleInputRef,
-  startEditing: startEditingTitle,
-  saveTitle,
-  handleKeydown: handleTitleKeydown,
-} = useBoardTitle(boardStore);
 
 const { isAddingStory, newStoryTitle, startAddStory, addStory, cancelAddStory } =
   useStoryManagement(boardStore);
@@ -58,25 +49,7 @@ onMounted(async () => {
     class="flex h-screen flex-col overflow-hidden bg-gray-50"
   >
     <!-- Board Header -->
-    <header class="border-b border-gray-200 bg-white px-6 py-4">
-      <div v-if="isEditingTitle">
-        <input
-          ref="titleInputRef"
-          v-model="titleInput"
-          @blur="saveTitle"
-          @keyup.enter="($event.target as HTMLInputElement).blur()"
-          @keydown="handleTitleKeydown"
-          type="text"
-          class="field-sizing-content min-w-10 rounded border border-gray-300 px-2 py-1 text-lg font-semibold outline-none focus:border-blue-500"
-          autofocus
-        />
-      </div>
-      <h1 v-else class="text-xl font-semibold text-gray-800">
-        <span @dblclick="startEditingTitle" title="Double click to edit">{{
-          boardStore.currentBoard.title
-        }}</span>
-      </h1>
-    </header>
+    <BoardHeader />
 
     <!-- Board Table -->
     <BoardTable
