@@ -1,8 +1,10 @@
 import { type DBSchema, openDB } from "idb";
+import { generateUniqueSlug } from "@/utils/slug";
 
 export interface BoardRecord {
   id: string;
   title: string;
+  slug: string;
   createdAt: number;
 }
 
@@ -26,6 +28,7 @@ export interface ScrumyklonDB extends DBSchema {
   boards: {
     key: string;
     value: BoardRecord;
+    indexes: { "by-slug": string };
   };
   stories: {
     key: string;
@@ -40,29 +43,56 @@ export interface ScrumyklonDB extends DBSchema {
 }
 
 const DB_NAME = "scrumyklon2";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export async function initDB() {
   return openDB<ScrumyklonDB>(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      // Boards store
-      if (!db.objectStoreNames.contains("boards")) {
-        db.createObjectStore("boards", { keyPath: "id" });
+    async upgrade(db, oldVersion, _newVersion, tx) {
+      // Version 1 setup
+      if (oldVersion < 1) {
+        // Boards store
+        if (!db.objectStoreNames.contains("boards")) {
+          db.createObjectStore("boards", { keyPath: "id" });
+        }
+
+        // Stories store
+        if (!db.objectStoreNames.contains("stories")) {
+          const storyStore = db.createObjectStore("stories", { keyPath: "id" });
+          storyStore.createIndex("by-board", "boardId");
+        }
+
+        // Tasks store
+        if (!db.objectStoreNames.contains("tasks")) {
+          const taskStore = db.createObjectStore("tasks", { keyPath: "id" });
+          taskStore.createIndex("by-story", "storyId");
+          taskStore.createIndex("by-story-column", ["storyId", "column"], {
+            multiEntry: false,
+          });
+        }
       }
 
-      // Stories store
-      if (!db.objectStoreNames.contains("stories")) {
-        const storyStore = db.createObjectStore("stories", { keyPath: "id" });
-        storyStore.createIndex("by-board", "boardId");
-      }
+      // Migration to version 2: add slugs and unique index
+      if (oldVersion < 2) {
+        const boardStore = tx.objectStore("boards");
+        const boards = await boardStore.getAll();
+        const usedSlugs = new Set<string>();
 
-      // Tasks store
-      if (!db.objectStoreNames.contains("tasks")) {
-        const taskStore = db.createObjectStore("tasks", { keyPath: "id" });
-        taskStore.createIndex("by-story", "storyId");
-        taskStore.createIndex("by-story-column", ["storyId", "column"], {
-          multiEntry: false,
-        });
+        // We use boardStore.put directly within the upgrade transaction
+        for (const board of boards) {
+          if (!board.slug) {
+            const slug = generateUniqueSlug(board.title, usedSlugs);
+            board.slug = slug;
+            usedSlugs.add(slug);
+            await boardStore.put(board);
+          } else {
+            usedSlugs.add(board.slug);
+          }
+        }
+
+        // Create index AFTER populating values to ensure no duplicate undefined keys (if any)
+        if (!boardStore.indexNames.contains("by-slug")) {
+          boardStore.createIndex("by-slug", "slug", { unique: true });
+        }
       }
     },
   });

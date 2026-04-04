@@ -11,7 +11,7 @@ const router = createRouter({
         const boardsApi = await import("@/db/boards");
         const boards = await boardsApi.getAllBoards();
         if (boards.length > 0 && boards[0]) {
-          return { name: "board", params: { boardId: boards[0].id } };
+          return { name: "board", params: { slug: boards[0].slug } };
         }
         return { name: "new-board" };
       },
@@ -22,7 +22,7 @@ const router = createRouter({
       component: () => import("@/views/NewBoard.vue"),
     },
     {
-      path: "/:boardId",
+      path: "/:slug",
       name: "board",
       component: () => import("@/views/BoardView.vue"),
       props: true,
