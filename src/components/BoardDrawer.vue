@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, reactive } from "vue";
 import { useRouter, RouterLink } from "vue-router";
-import { Plus, Trash2 } from "@lucide/vue";
+import { Plus, Trash2, Share, Check } from "@lucide/vue";
 import { useBoardStore } from "@/stores/board";
 import type { BoardRecord } from "@/db/db";
+import { exportBoardToMarkdown } from "@/utils/exportMarkdown";
 
 const { open } = defineProps<{ open: boolean }>();
 const emit = defineEmits<{ close: [] }>();
@@ -12,6 +13,7 @@ const boardStore = useBoardStore();
 const router = useRouter();
 
 const boards = ref<BoardRecord[]>([]);
+const exportedBoards = reactive<Record<string, boolean>>({});
 
 watch(
   () => open,
@@ -23,6 +25,15 @@ watch(
 function navigateToCreate() {
   router.push("/new");
   emit("close");
+}
+
+async function handleExport(board: BoardRecord) {
+  const markdown = await exportBoardToMarkdown(board);
+  await navigator.clipboard.writeText(markdown);
+  exportedBoards[board.id] = true;
+  setTimeout(() => {
+    exportedBoards[board.id] = false;
+  }, 2000);
 }
 
 async function deleteBoard(board: BoardRecord) {
@@ -83,6 +94,14 @@ async function deleteBoard(board: BoardRecord) {
                 >
                   {{ board.title }}
                 </RouterLink>
+                <button
+                  @click="handleExport(board)"
+                  class="shrink-0 rounded p-1 text-gray-400 opacity-0 transition-all hover:bg-green-50 hover:text-green-600 group-hover:opacity-100"
+                  :title="exportedBoards[board.id] ? 'Copied!' : 'Export as Markdown'"
+                >
+                  <Check v-if="exportedBoards[board.id]" class="size-4" />
+                  <Share v-else class="size-4" />
+                </button>
                 <button
                   @click="deleteBoard(board)"
                   class="shrink-0 rounded p-1 text-gray-400 opacity-0 transition-all hover:bg-red-50 hover:text-red-600 group-hover:opacity-100"
