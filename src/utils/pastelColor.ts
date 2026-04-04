@@ -2,7 +2,7 @@
  * Generate a pastel color from a given string
  */
 export function generatePastelColor(text: string): string {
-  if (!text.trim()) return "#f0f0f0";
+  if (!text.trim()) return "#fff";
 
   let hash = 0;
   for (let i = 0; i < text.length; i++) {
