@@ -37,7 +37,7 @@ onMounted(() => {
       class="rounded p-1 text-gray-600 hover:bg-gray-100 hover:text-gray-800"
       title="Open boards menu"
     >
-      <Menu class="size-5" />
+      <Menu class="size-6" />
     </button>
 
     <!-- Title -->
