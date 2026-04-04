@@ -83,7 +83,7 @@ export async function initDB() {
             const slug = generateUniqueSlug(board.title, usedSlugs);
             board.slug = slug;
             usedSlugs.add(slug);
-            boardStore.put(board);
+            await boardStore.put(board);
           } else {
             usedSlugs.add(board.slug);
           }
