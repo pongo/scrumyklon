@@ -29,7 +29,7 @@ function closeEdit() {
 
 <template>
   <div
-    class="group relative flex w-35 cursor-default flex-col justify-between rounded-sm border border-gray-200 px-2 py-2 text-center shadow-sm"
+    class="group relative select-none flex h-32 w-35 overflow-hidden cursor-default flex-col justify-between rounded-sm border border-gray-200 px-2 py-2 text-center shadow-sm"
     :style="{ backgroundColor: task.assignee ? generatePastelColor(task.assignee) : '#fff' }"
     :data-task-id="task.id"
     @mouseenter="isHovered = true"
@@ -48,8 +48,8 @@ function closeEdit() {
 
     <!-- Task Title -->
     <p
-      class="whitespace-pre-wrap text-xs font-medium text-gray-800"
-      :class="[task.assignee ? 'pb-5' : '']"
+      class="line-clamp-6 whitespace-pre-wrap text-xs font-medium text-gray-800"
+      :class="[task.assignee ? 'mb-3.5' : '']"
     >
       {{ task.title }}
     </p>
@@ -60,7 +60,7 @@ function closeEdit() {
       class="flex items-center gap-0.5 self-start text-xs text-gray-600 absolute left-0.5 bottom-0.5"
     >
       <User class="h-2.5 w-2.5" />
-      <span>{{ task.assignee }}</span>
+      <span class="truncate">{{ task.assignee }}</span>
     </div>
 
     <!-- Edit Dialog -->
