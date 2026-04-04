@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useBoardStore } from "@/stores/board";
 import { generatePastelColor } from "@/utils/pastelColor";
 import TaskDialog from "@/components/TaskDialog.vue";
@@ -11,6 +11,14 @@ const props = defineProps<{ task: TaskRecord }>();
 const boardStore = useBoardStore();
 const isEditing = ref(false);
 const isHovered = ref(false);
+
+const colors = computed(() => {
+  if (props.task.assignee) {
+    const base = generatePastelColor(props.task.assignee);
+    return { base, accent: `color-mix(in srgb, ${base}, black 15%)` };
+  }
+  return { base: "#fff", accent: "#f2f6ff" };
+});
 
 function handleDelete() {
   if (confirm("Delete this task?")) {
@@ -29,38 +37,40 @@ function closeEdit() {
 
 <template>
   <div
-    class="group relative flex h-32 w-35 cursor-default flex-col justify-between overflow-hidden rounded-sm border border-gray-200 px-2 py-2 text-center shadow-sm select-none"
-    :style="{ backgroundColor: task.assignee ? generatePastelColor(task.assignee) : '#fff' }"
+    class="group relative flex h-30 w-32 flex-col overflow-hidden rounded-[1px] border-0 border-black/10 shadow-sm transition-shadow select-none"
+    :style="{ backgroundColor: colors.base }"
     :data-task-id="task.id"
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"
     @dblclick="startEdit"
   >
-    <!-- Delete button on hover -->
-    <button
-      v-show="isHovered"
-      @click.stop="handleDelete"
-      class="absolute top-0.5 right-0.5 rounded p-0.5 text-gray-400 hover:text-red-500"
-      title="Delete"
-    >
-      <X class="h-3.5 w-3.5" />
-    </button>
+    <!-- Top Accent Bar -->
+    <div class="h-2.5 w-full" :style="{ backgroundColor: colors.accent }"></div>
 
-    <!-- Task Title -->
-    <p
-      class="line-clamp-6 text-xs font-medium whitespace-pre-wrap text-gray-800"
-      :class="[task.assignee ? 'mb-3.5' : '']"
-    >
-      {{ task.title }}
-    </p>
+    <div class="relative flex flex-1 flex-col justify-between p-2.5">
+      <!-- Delete button on hover -->
+      <button
+        v-show="isHovered"
+        @click.stop="handleDelete"
+        class="absolute top-0 right-0.5 rounded p-0.5 text-gray-400 opacity-60 hover:text-red-500 hover:opacity-100"
+        title="Delete"
+      >
+        <X class="h-3 w-3" />
+      </button>
 
-    <!-- Assignee -->
-    <div
-      v-if="task.assignee"
-      class="absolute bottom-0.5 left-0.5 flex items-center gap-0.5 self-start text-xs text-gray-600"
-    >
-      <User class="h-2.5 w-2.5" />
-      <span class="truncate">{{ task.assignee }}</span>
+      <!-- Task Title -->
+      <p class="line-clamp-5 text-center text-xs font-medium whitespace-pre-wrap text-gray-800">
+        {{ task.title }}
+      </p>
+
+      <!-- Assignee -->
+      <div
+        v-if="task.assignee"
+        class="absolute bottom-0.5 left-0.5 flex items-center gap-0.5 self-start text-xs text-gray-600"
+      >
+        <User class="h-2.5 w-2.5" />
+        <span class="truncate">{{ task.assignee }}</span>
+      </div>
     </div>
 
     <!-- Edit Dialog -->

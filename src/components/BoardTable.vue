@@ -5,12 +5,8 @@ import { useBoardStore } from "@/stores/board";
 import StoryCard from "@/components/StoryCard.vue";
 import StoryForm from "@/components/StoryForm.vue";
 import TaskCard from "@/components/TaskCard.vue";
-import TaskCard2 from "@/components/TaskCard2.vue";
 import { Plus, Trash2 } from "@lucide/vue";
 import type { TaskRecord, StoryRecord } from "@/db/db";
-
-import { useAppVariants } from "@/variants";
-const { variants } = useAppVariants();
 
 const props = defineProps<{
   stories: StoryRecord[];
@@ -189,19 +185,7 @@ async function clearDoneColumn() {
                   }
                 "
               >
-                <!-- <TaskCard
-                  v-if="variants.TaskCard"
-                  v-for="task in cellLists[cellKey(story.id, col)]"
-                  :key="task.id"
-                  :task="task"
-                />
-                <TaskCard2
-                  v-else
-                  v-for="task in cellLists[cellKey(story.id, col)]"
-                  :key="task.id"
-                  :task="task"
-                /> -->
-                <TaskCard2
+                <TaskCard
                   v-for="task in cellLists[cellKey(story.id, col)]"
                   :key="task.id"
                   :task="task"
