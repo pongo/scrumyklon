@@ -56,7 +56,7 @@ export const useBoardStore = defineStore("board", () => {
   async function createBoard(title: string): Promise<BoardRecord> {
     const id = crypto.randomUUID();
     const existingBoards = await boardsApi.getAllBoards();
-    const existingSlugs = existingBoards.map((b) => b.slug);
+    const existingSlugs = new Set(existingBoards.map((b) => b.slug));
     const slug = generateUniqueSlug(title, existingSlugs);
 
     const record: Omit<BoardRecord, "createdAt"> = { id, title, slug };

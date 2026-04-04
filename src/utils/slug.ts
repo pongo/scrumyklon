@@ -1,37 +1,37 @@
 import slugify from "slugify";
 
-export const RESERVED_SLUGS = ["new"];
+const RESERVED_SLUGS = new Set(["new"]);
 
 /**
- * Generates a unique slug from a title.
- * If slug exists OR is "new", it appends "-2" (or increments the existing number suffix).
+ * Generate a unique slug from a title, avoiding collisions and reserved words.
+ * If slug exists OR reserved, it appends "-2" (or increments the existing number suffix).
  *
  * Examples:
  * "Hello" (exists) -> "hello-2"
  * "Hello 2" (exists) -> "hello-3"
  * "new" -> "new-2"
  */
-export function generateUniqueSlug(title: string, existingSlugs: string[]): string {
+export function generateUniqueSlug(title: string, existingSlugs: ReadonlySet<string>): string {
   const baseSlug = slugify(title, { lower: true, strict: true }) || "board";
 
-  if (!existingSlugs.includes(baseSlug) && !RESERVED_SLUGS.includes(baseSlug)) {
+  if (!existingSlugs.has(baseSlug) && !RESERVED_SLUGS.has(baseSlug)) {
     return baseSlug;
   }
 
-  let slug = baseSlug;
+  let base = baseSlug;
   let counter = 2;
 
-  const match = slug.match(/-(\d+)$/);
+  const match = base.match(/-(\d+)$/);
   if (match && match[1]) {
-    slug = slug.substring(0, slug.lastIndexOf("-"));
+    base = base.substring(0, base.lastIndexOf("-"));
     counter = parseInt(match[1], 10) + 1;
   }
 
-  let finalSlug = `${slug}-${counter}`;
-  while (existingSlugs.includes(finalSlug) || RESERVED_SLUGS.includes(finalSlug)) {
+  let slug = `${base}-${counter}`;
+  while (existingSlugs.has(slug) || RESERVED_SLUGS.has(slug)) {
     counter++;
-    finalSlug = `${slug}-${counter}`;
+    slug = `${base}-${counter}`;
   }
 
-  return finalSlug;
+  return slug;
 }

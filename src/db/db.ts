@@ -80,7 +80,7 @@ export async function initDB() {
         // We use boardStore.put directly within the upgrade transaction
         for (const board of boards) {
           if (!board.slug) {
-            const slug = generateUniqueSlug(board.title, Array.from(usedSlugs));
+            const slug = generateUniqueSlug(board.title, usedSlugs);
             board.slug = slug;
             usedSlugs.add(slug);
             boardStore.put(board);
