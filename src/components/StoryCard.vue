@@ -29,7 +29,7 @@ function handleDelete() {
     <button
       v-if="!isEditing"
       @click.stop="handleDelete"
-      class="absolute right-1 top-1 hidden rounded p-0.5 text-gray-400 hover:text-red-500 group-hover:block"
+      class="absolute top-1 right-1 hidden rounded p-0.5 text-gray-400 group-hover:block hover:text-red-500"
       title="Delete Story"
     >
       <X class="h-3.5 w-3.5" />
@@ -49,12 +49,7 @@ function handleDelete() {
     />
 
     <!-- Story Title -->
-    <div
-      v-else
-      class="text-center text-sm"
-      @dblclick="startEditing"
-      title="Double click to edit"
-    >
+    <div v-else class="text-center text-sm" @dblclick="startEditing" title="Double click to edit">
       {{ story.title }}
     </div>
   </div>

@@ -3,10 +3,7 @@ import type { TaskRecord } from "./db";
 
 type TaskColumn = TaskRecord["column"];
 
-export async function getTasksByStory(
-  storyId: string,
-  column?: TaskColumn,
-): Promise<TaskRecord[]> {
+export async function getTasksByStory(storyId: string, column?: TaskColumn): Promise<TaskRecord[]> {
   const db = await getDB();
   let result: TaskRecord[];
   if (column) {
@@ -17,13 +14,10 @@ export async function getTasksByStory(
   return result.sort((a, b) => a.order - b.order);
 }
 
-export async function createTask(
-  task: Omit<TaskRecord, "order">,
-): Promise<string> {
+export async function createTask(task: Omit<TaskRecord, "order">): Promise<string> {
   const db = await getDB();
   const existing = await getTasksByStory(task.storyId, task.column);
-  const order =
-    existing.length > 0 ? existing[existing.length - 1]!.order + 1 : 0;
+  const order = existing.length > 0 ? existing[existing.length - 1]!.order + 1 : 0;
   const record: TaskRecord = { ...task, order };
   await db.add("tasks", record);
   return record.id;

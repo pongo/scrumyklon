@@ -11,9 +11,7 @@ export async function getBoard(id: string): Promise<BoardRecord | undefined> {
   return db.get("boards", id);
 }
 
-export async function createBoard(
-  board: Omit<BoardRecord, "createdAt">,
-): Promise<string> {
+export async function createBoard(board: Omit<BoardRecord, "createdAt">): Promise<string> {
   const db = await getDB();
   const record: BoardRecord = { ...board, createdAt: Date.now() };
   await db.add("boards", record);

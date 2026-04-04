@@ -29,7 +29,7 @@ function closeEdit() {
 
 <template>
   <div
-    class="group relative select-none flex h-32 w-35 overflow-hidden cursor-default flex-col justify-between rounded-sm border border-gray-200 px-2 py-2 text-center shadow-sm"
+    class="group relative flex h-32 w-35 cursor-default flex-col justify-between overflow-hidden rounded-sm border border-gray-200 px-2 py-2 text-center shadow-sm select-none"
     :style="{ backgroundColor: task.assignee ? generatePastelColor(task.assignee) : '#fff' }"
     :data-task-id="task.id"
     @mouseenter="isHovered = true"
@@ -40,7 +40,7 @@ function closeEdit() {
     <button
       v-show="isHovered"
       @click.stop="handleDelete"
-      class="absolute right-0.5 top-0.5 rounded p-0.5 text-gray-400 hover:text-red-500"
+      class="absolute top-0.5 right-0.5 rounded p-0.5 text-gray-400 hover:text-red-500"
       title="Delete"
     >
       <X class="h-3.5 w-3.5" />
@@ -48,7 +48,7 @@ function closeEdit() {
 
     <!-- Task Title -->
     <p
-      class="line-clamp-6 whitespace-pre-wrap text-xs font-medium text-gray-800"
+      class="line-clamp-6 text-xs font-medium whitespace-pre-wrap text-gray-800"
       :class="[task.assignee ? 'mb-3.5' : '']"
     >
       {{ task.title }}
@@ -57,7 +57,7 @@ function closeEdit() {
     <!-- Assignee -->
     <div
       v-if="task.assignee"
-      class="flex items-center gap-0.5 self-start text-xs text-gray-600 absolute left-0.5 bottom-0.5"
+      class="absolute bottom-0.5 left-0.5 flex items-center gap-0.5 self-start text-xs text-gray-600"
     >
       <User class="h-2.5 w-2.5" />
       <span class="truncate">{{ task.assignee }}</span>

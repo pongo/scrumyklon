@@ -82,15 +82,15 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
       <thead>
         <tr class="bg-white">
           <th
-            class="border-b border-r border-gray-200 bg-white px-3 py-3 text-center text-sm font-semibold uppercase tracking-wide text-gray-400"
+            class="border-r border-b border-gray-200 bg-white px-3 py-3 text-center text-sm font-semibold tracking-wide text-gray-400 uppercase"
           >
             Stories
           </th>
-          <th class="border-b border-r border-gray-200 bg-white" />
+          <th class="border-r border-b border-gray-200 bg-white" />
           <th
             v-for="col in columns"
             :key="col"
-            class="border-b border-r border-gray-200 bg-white px-3 py-3 text-center text-sm font-semibold text-gray-400 last:border-r-0"
+            class="border-r border-b border-gray-200 bg-white px-3 py-3 text-center text-sm font-semibold text-gray-400 last:border-r-0"
           >
             {{ columnLabels[col] }}
           </th>
@@ -101,7 +101,7 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
       <tbody>
         <tr v-for="story in stories" :key="story.id">
           <!-- Story Cell -->
-          <td class="border-b border-r border-gray-200 bg-white p-0 align-top" style="height: 1px">
+          <td class="border-r border-b border-gray-200 bg-white p-0 align-top" style="height: 1px">
             <div class="h-full">
               <StoryCard
                 :story="story"
@@ -113,7 +113,7 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
 
           <!-- Add Task Button Cell -->
           <td
-            class="border-b border-r border-gray-200 bg-white p-2"
+            class="border-r border-b border-gray-200 bg-white p-2"
             @click="emit('addTask', story.id)"
           >
             <button
@@ -128,7 +128,7 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
           <td
             v-for="col in columns"
             :key="col"
-            class="relative border-b border-r border-gray-200 bg-gray-50 p-2 align-top last:border-r-0"
+            class="relative border-r border-b border-gray-200 bg-gray-50 p-2 align-top last:border-r-0"
             :data-story-id="story.id"
             :data-column="col"
             style="height: 1px"
@@ -197,7 +197,7 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
       <!-- New Story Row -->
       <tfoot>
         <tr>
-          <td class="border-b border-r border-gray-200 bg-white">
+          <td class="border-r border-b border-gray-200 bg-white">
             <StoryForm
               v-if="isAddingStory"
               :initial-title="newStoryTitle"
@@ -207,16 +207,16 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
             <button
               v-else
               @click="emit('startAddStory')"
-              class="flex py-4 w-full items-center justify-center text-sm text-gray-400 underline hover:text-gray-600 skip-ink-none"
+              class="skip-ink-none flex w-full items-center justify-center py-4 text-sm text-gray-400 underline hover:text-gray-600"
             >
               New Story
             </button>
           </td>
-          <td class="border-b border-r border-gray-200 bg-white" />
+          <td class="border-r border-b border-gray-200 bg-white" />
           <td
             v-for="col in columns"
             :key="col"
-            class="border-b border-r border-gray-200 bg-gray-50 last:border-r-0"
+            class="border-r border-b border-gray-200 bg-gray-50 last:border-r-0"
           />
         </tr>
       </tfoot>
@@ -240,7 +240,7 @@ tfoot td {
 }
 
 .sortable-ghost {
-  @apply opacity-40 outline-2 outline-dashed outline-blue-400/50;
+  @apply opacity-40 outline-2 outline-blue-400/50 outline-dashed;
   background: repeating-linear-gradient(
     45deg,
     transparent,

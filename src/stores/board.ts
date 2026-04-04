@@ -85,19 +85,19 @@ export const useBoardStore = defineStore("board", () => {
     if (!currentBoard.value) return;
     const id = crypto.randomUUID();
     await storiesApi.createStory({ id, boardId: currentBoard.value.id, title });
-    const story = await storiesApi.getStoriesByBoard(currentBoard.value.id).then((s) =>
-      s.find((x) => x.id === id),
-    );
+    const story = await storiesApi
+      .getStoriesByBoard(currentBoard.value.id)
+      .then((s) => s.find((x) => x.id === id));
     if (story) stories.value.push(story);
   }
 
   async function updateStoryTitle(storyId: string, title: string): Promise<void> {
     const story = stories.value.find((s) => s.id === storyId);
     const previousTitle = story?.title;
-    
+
     // Optimistic update
     if (story) story.title = title;
-    
+
     try {
       await storiesApi.updateStory(storyId, { title });
     } catch (error) {
@@ -115,11 +115,7 @@ export const useBoardStore = defineStore("board", () => {
     tasks.value = tasks.value.filter((t) => t.storyId !== storyId);
   }
 
-  async function createTask(
-    storyId: string,
-    title: string,
-    assignee: string,
-  ): Promise<void> {
+  async function createTask(storyId: string, title: string, assignee: string): Promise<void> {
     const id = crypto.randomUUID();
     await tasksApi.createTask({
       id,
@@ -128,15 +124,21 @@ export const useBoardStore = defineStore("board", () => {
       title,
       assignee,
     });
-    const task = await tasksApi.getTasksByStory(storyId, "TO_DO").then((t) =>
-      t.find((x) => x.id === id),
-    );
+    const task = await tasksApi
+      .getTasksByStory(storyId, "TO_DO")
+      .then((t) => t.find((x) => x.id === id));
     if (task) tasks.value.push(task);
   }
 
   async function updateTask(
     taskId: string,
-    updates: { title?: string; assignee?: string; storyId?: string; column?: TaskRecord["column"]; order?: number },
+    updates: {
+      title?: string;
+      assignee?: string;
+      storyId?: string;
+      column?: TaskRecord["column"];
+      order?: number;
+    },
   ): Promise<void> {
     await tasksApi.updateTask(taskId, updates);
     const task = tasks.value.find((t) => t.id === taskId);
@@ -207,8 +209,12 @@ export const useBoardStore = defineStore("board", () => {
     targetTasks: TaskRecord[],
   ): Promise<void> {
     await tasksApi.saveBothCellsTasks(
-      sourceStoryId, sourceColumn, sourceTasks,
-      targetStoryId, targetColumn, targetTasks,
+      sourceStoryId,
+      sourceColumn,
+      sourceTasks,
+      targetStoryId,
+      targetColumn,
+      targetTasks,
     );
 
     // Reload all tasks so cellLists watcher picks up the changes

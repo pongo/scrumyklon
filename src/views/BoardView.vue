@@ -58,9 +58,7 @@ onMounted(async () => {
     class="flex h-screen flex-col overflow-hidden bg-gray-50"
   >
     <!-- Board Header -->
-    <header
-      class="border-b border-gray-200 bg-white px-6 py-4"
-    >
+    <header class="border-b border-gray-200 bg-white px-6 py-4">
       <div v-if="isEditingTitle">
         <input
           ref="titleInputRef"
@@ -69,7 +67,7 @@ onMounted(async () => {
           @keyup.enter="($event.target as HTMLInputElement).blur()"
           @keydown="handleTitleKeydown"
           type="text"
-          class="rounded border border-gray-300 px-2 py-1 text-lg font-semibold outline-none focus:border-blue-500 field-sizing-content min-w-10"
+          class="field-sizing-content min-w-10 rounded border border-gray-300 px-2 py-1 text-lg font-semibold outline-none focus:border-blue-500"
           autofocus
         />
       </div>

@@ -40,7 +40,7 @@ function closeEdit() {
 
 <template>
   <div
-    class="group relative select-none flex h-32 w-32 flex-col overflow-hidden rounded-[1px] transition-shadow shadow-sm border-black/10 border-0"
+    class="group relative flex h-32 w-32 flex-col overflow-hidden rounded-[1px] border-0 border-black/10 shadow-sm transition-shadow select-none"
     _class="group relative flex h-32 w-32 flex-col overflow-hidden rounded-[1px] shadow-[0_1px_3px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.24)] transition-shadow"
     :class="[variants.TaskWidth]"
     :style="{ backgroundColor: colors.base }"
@@ -57,21 +57,21 @@ function closeEdit() {
       <button
         v-show="isHovered"
         @click.stop="handleDelete"
-        class="absolute right-0.5 top-0 rounded p-0.5 text-gray-400 opacity-60 hover:text-red-500 hover:opacity-100"
+        class="absolute top-0 right-0.5 rounded p-0.5 text-gray-400 opacity-60 hover:text-red-500 hover:opacity-100"
         title="Delete"
       >
         <X class="h-3 w-3" />
       </button>
 
       <!-- Task Title -->
-      <p class="line-clamp-5 whitespace-pre-wrap text-xs font-medium text-gray-800 text-center">
+      <p class="line-clamp-5 text-center text-xs font-medium whitespace-pre-wrap text-gray-800">
         {{ task.title }}
       </p>
 
       <!-- Assignee -->
       <div
         v-if="task.assignee"
-        class="flex items-center gap-0.5 self-start text-xs text-gray-600 absolute left-0.5 bottom-0.5"
+        class="absolute bottom-0.5 left-0.5 flex items-center gap-0.5 self-start text-xs text-gray-600"
       >
         <User class="h-2.5 w-2.5" />
         <span class="truncate">{{ task.assignee }}</span>

@@ -37,15 +37,9 @@ function handleKeydown(e: KeyboardEvent) {
 </script>
 
 <template>
-  <div
-    class="flex min-h-screen items-center justify-center bg-gray-50"
-  >
+  <div class="flex min-h-screen items-center justify-center bg-gray-50">
     <div class="w-full max-w-md px-4">
-      <h1
-        class="mb-8 text-center text-3xl font-bold text-gray-800"
-      >
-        Scrumyklon
-      </h1>
+      <h1 class="mb-8 text-center text-3xl font-bold text-gray-800">Scrumyklon</h1>
       <div class="flex gap-2">
         <input
           ref="inputRef"

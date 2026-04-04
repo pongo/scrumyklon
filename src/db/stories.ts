@@ -7,13 +7,10 @@ export async function getStoriesByBoard(boardId: string): Promise<StoryRecord[]>
   return stories.sort((a, b) => a.order - b.order);
 }
 
-export async function createStory(
-  story: Omit<StoryRecord, "order">,
-): Promise<string> {
+export async function createStory(story: Omit<StoryRecord, "order">): Promise<string> {
   const db = await getDB();
   const existing = await getStoriesByBoard(story.boardId);
-  const order =
-    existing.length > 0 ? existing[existing.length - 1]!.order + 1 : 0;
+  const order = existing.length > 0 ? existing[existing.length - 1]!.order + 1 : 0;
   const record: StoryRecord = { ...story, order };
   await db.add("stories", record);
   return record.id;
@@ -47,10 +44,7 @@ export async function deleteStory(id: string): Promise<void> {
   ]);
 }
 
-export async function reorderStories(
-  boardId: string,
-  reorderedIds: string[],
-): Promise<void> {
+export async function reorderStories(boardId: string, reorderedIds: string[]): Promise<void> {
   const db = await getDB();
   const tx = db.transaction("stories", "readwrite");
   const store = tx.objectStore("stories");
