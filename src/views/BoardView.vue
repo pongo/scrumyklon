@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { ref, watch } from "vue";
 import { useBoardStore } from "@/stores/board";
 import BoardTable from "@/components/BoardTable.vue";
 import TaskDialog from "@/components/TaskDialog.vue";
@@ -36,9 +36,13 @@ async function handleStoryDelete(id: string) {
   await boardStore.deleteStory(id);
 }
 
-onMounted(async () => {
-  await boardStore.loadBoard(props.boardId);
-});
+watch(
+  () => props.boardId,
+  async (id) => {
+    await boardStore.loadBoard(id);
+  },
+  { immediate: true },
+);
 </script>
 
 <template>

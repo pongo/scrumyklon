@@ -6,15 +6,14 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      redirect: "/new",
-      beforeEnter: async (_to, _from, next) => {
+      component: { template: "" },
+      beforeEnter: async () => {
         const boardsApi = await import("@/db/boards");
         const boards = await boardsApi.getAllBoards();
         if (boards.length > 0 && boards[0]) {
-          next({ name: "board", params: { boardId: boards[0].id } });
-        } else {
-          next({ name: "new-board" });
+          return { name: "board", params: { boardId: boards[0].id } };
         }
+        return { name: "new-board" };
       },
     },
     {

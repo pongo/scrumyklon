@@ -189,7 +189,7 @@ async function clearDoneColumn() {
                   }
                 "
               >
-                <TaskCard
+                <!-- <TaskCard
                   v-if="variants.TaskCard"
                   v-for="task in cellLists[cellKey(story.id, col)]"
                   :key="task.id"
@@ -197,6 +197,11 @@ async function clearDoneColumn() {
                 />
                 <TaskCard2
                   v-else
+                  v-for="task in cellLists[cellKey(story.id, col)]"
+                  :key="task.id"
+                  :task="task"
+                /> -->
+                <TaskCard2
                   v-for="task in cellLists[cellKey(story.id, col)]"
                   :key="task.id"
                   :task="task"
