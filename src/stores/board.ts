@@ -53,16 +53,15 @@ export const useBoardStore = defineStore("board", () => {
     return allTasks;
   }
 
-  async function createBoard(title: string): Promise<BoardRecord> {
+  async function createBoard(title: string): Promise<string> {
     const id = crypto.randomUUID();
     const existingBoards = await boardsApi.getAllBoards();
     const existingSlugs = new Set(existingBoards.map((b) => b.slug));
     const slug = generateUniqueSlug(title, existingSlugs);
 
-    const record: Omit<BoardRecord, "createdAt"> = { id, title, slug };
-    await boardsApi.createBoard(record);
+    await boardsApi.createBoard({ id, title, slug });
 
-    return { ...record, createdAt: Date.now() };
+    return slug;
   }
 
   async function updateBoardTitle(title: string): Promise<void> {
