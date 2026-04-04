@@ -101,7 +101,7 @@ function handleKeydown(e: KeyboardEvent) {
             @keydown="handleKeydown"
             rows="3"
             placeholder=""
-            class="w-full resize-none border-none bg-transparent text-center text-lg font-medium text-gray-800 outline-none"
+            class="w-full resize-none border-none bg-transparent text-center text-lg font-medium text-gray-800 outline-none field-sizing-content max-h-[80vh] overflow-auto"
           />
         </div>
 
