@@ -67,7 +67,7 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
 
 <template>
   <div class="flex-1 overflow-auto">
-    <table class="w-full" style="border-collapse: separate; border-spacing: 0;">
+    <table class="w-full" style="border-collapse: separate; border-spacing: 0">
       <colgroup>
         <col class="w-50" />
         <col class="w-10" />
@@ -95,15 +95,9 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
 
       <!-- Story Rows -->
       <tbody>
-        <tr
-          v-for="story in stories"
-          :key="story.id"
-        >
+        <tr v-for="story in stories" :key="story.id">
           <!-- Story Cell -->
-          <td
-            class="border-b border-r border-gray-200 bg-white p-0 align-top"
-            style="height: 1px"
-          >
+          <td class="border-b border-r border-gray-200 bg-white p-0 align-top" style="height: 1px">
             <div class="h-full">
               <StoryCard
                 :story="story"
@@ -140,7 +134,7 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
                 :key="cellKey(story.id, col)"
                 v-model="cellLists[cellKey(story.id, col)]!"
                 :group="{ name: 'tasks', pull: true, put: true }"
-                class="flex flex-1 flex-wrap content-start gap-2"
+                class="flex flex-1 flex-wrap content-start items-start gap-2"
                 :animation="150"
                 ghost-class="sortable-ghost"
                 chosen-class="sortable-chosen"
