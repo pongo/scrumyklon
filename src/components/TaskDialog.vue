@@ -41,9 +41,6 @@ function handleOverlayClick() {
 
 onMounted(() => {
   textareaRef.value?.focus();
-  if (props.mode === "edit") {
-    textareaRef.value?.select();
-  }
 });
 
 async function handleSave() {
