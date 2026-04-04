@@ -105,3 +105,17 @@ export async function saveBothCellsTasks(
 
   await tx.done;
 }
+
+/**
+ * Delete all tasks in the DONE column across all stories.
+ */
+export async function deleteAllDoneTasks(): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction("tasks", "readwrite");
+  const store = tx.objectStore("tasks");
+
+  const allTasks = await store.getAll();
+  const doneTaskIds = allTasks.filter((t) => t.column === "DONE").map((t) => t.id);
+
+  await Promise.all([...doneTaskIds.map((id) => store.delete(id)), tx.done]);
+}

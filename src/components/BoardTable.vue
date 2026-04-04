@@ -6,7 +6,7 @@ import StoryCard from "@/components/StoryCard.vue";
 import StoryForm from "@/components/StoryForm.vue";
 import TaskCard from "@/components/TaskCard.vue";
 import TaskCard2 from "@/components/TaskCard2.vue";
-import { Plus } from "@lucide/vue";
+import { Plus, Trash2 } from "@lucide/vue";
 import type { TaskRecord, StoryRecord } from "@/db/db";
 
 import { useAppVariants } from "@/variants";
@@ -67,6 +67,11 @@ function syncCellLists() {
 // Initial sync + watch for store task changes
 syncCellLists();
 watch(() => boardStore.tasks, syncCellLists, { deep: true });
+
+async function clearDoneColumn() {
+  if (!confirm("Delete all done tasks?")) return;
+  await boardStore.deleteAllDoneTasks();
+}
 </script>
 
 <template>
@@ -90,9 +95,17 @@ watch(() => boardStore.tasks, syncCellLists, { deep: true });
           <th
             v-for="col in columns"
             :key="col"
-            class="border-r border-b border-gray-200 bg-white px-3 py-3 text-center text-sm font-semibold text-gray-400 last:border-r-0"
+            class="relative border-r border-b border-gray-200 bg-white px-3 py-3 text-center text-sm font-semibold text-gray-400 last:border-r-0"
           >
             {{ columnLabels[col] }}
+            <button
+              v-if="col === 'DONE'"
+              class="absolute top-1/2 right-2 -translate-y-1/2 rounded p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-red-500"
+              title="Delete all done tasks"
+              @click="clearDoneColumn"
+            >
+              <Trash2 class="h-4 w-4" />
+            </button>
           </th>
         </tr>
       </thead>

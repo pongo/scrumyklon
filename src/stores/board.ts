@@ -156,6 +156,11 @@ export const useBoardStore = defineStore("board", () => {
     tasks.value = tasks.value.filter((t) => t.id !== taskId);
   }
 
+  async function deleteAllDoneTasks(): Promise<void> {
+    await tasksApi.deleteAllDoneTasks();
+    tasks.value = tasks.value.filter((t) => t.column !== "DONE");
+  }
+
   async function moveTask(
     taskId: string,
     newStoryId: string,
@@ -245,6 +250,7 @@ export const useBoardStore = defineStore("board", () => {
     createTask,
     updateTask,
     deleteTask,
+    deleteAllDoneTasks,
     moveTask,
     saveCell,
     saveBothCells,
