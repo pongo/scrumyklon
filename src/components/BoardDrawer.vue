@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, reactive } from "vue";
 import { useRouter, RouterLink } from "vue-router";
-import { Plus, Trash2, Share, Check } from "@lucide/vue";
+import { Trash2, Share, Check } from "@lucide/vue";
 import { useBoardStore } from "@/stores/board";
 import type { BoardRecord } from "@/db/db";
 import { exportBoardToMarkdown } from "@/utils/exportMarkdown";
@@ -87,7 +87,7 @@ async function deleteBoard(board: BoardRecord) {
                 }"
               >
                 <RouterLink
-                  :to="`/${board.id}`"
+                  :to="`/${board.slug}`"
                   @click="emit('close')"
                   class="flex-1 truncate text-sm text-gray-700 hover:text-gray-900"
                 >

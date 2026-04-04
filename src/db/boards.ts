@@ -11,6 +11,11 @@ export async function getBoard(id: string): Promise<BoardRecord | undefined> {
   return db.get("boards", id);
 }
 
+export async function getBoardBySlug(slug: string): Promise<BoardRecord | undefined> {
+  const db = await getDB();
+  return db.getFromIndex("boards", "by-slug", slug);
+}
+
 export async function createBoard(board: Omit<BoardRecord, "createdAt">): Promise<string> {
   const db = await getDB();
   const record: BoardRecord = { ...board, createdAt: Date.now() };

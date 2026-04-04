@@ -24,7 +24,7 @@ export async function exportBoardToMarkdown(board: BoardRecord): Promise<string>
   const lines: string[] = [];
   lines.push(`# ${board.title}`);
   lines.push("");
-  lines.push(`${window.location.origin}/${board.id}`);
+  lines.push(`${window.location.origin}/${board.slug}`);
 
   for (const story of stories) {
     lines.push("");

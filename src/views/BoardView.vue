@@ -7,7 +7,7 @@ import BoardHeader from "@/components/BoardHeader.vue";
 import { useStoryManagement } from "@/composables/useStoryManagement";
 import type { TaskRecord } from "@/db/db";
 
-const props = defineProps<{ boardId: string }>();
+const props = defineProps<{ slug: string }>();
 
 const boardStore = useBoardStore();
 
@@ -37,9 +37,9 @@ async function handleStoryDelete(id: string) {
 }
 
 watch(
-  () => props.boardId,
-  async (id) => {
-    await boardStore.loadBoard(id);
+  () => props.slug,
+  async (slug) => {
+    await boardStore.loadBoard(slug);
   },
   { immediate: true },
 );

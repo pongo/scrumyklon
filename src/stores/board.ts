@@ -4,6 +4,7 @@ import type { BoardRecord, StoryRecord, TaskRecord } from "@/db/db";
 import * as boardsApi from "@/db/boards";
 import * as storiesApi from "@/db/stories";
 import * as tasksApi from "@/db/tasks";
+import { generateUniqueSlug } from "@/utils/slug";
 
 const COLUMNS: TaskRecord["column"][] = ["TO_DO", "IN_PROGRESS", "VERIFY", "DONE"];
 
@@ -21,13 +22,14 @@ export const useBoardStore = defineStore("board", () => {
       .sort((a, b) => a.order - b.order);
   }
 
-  async function loadBoard(boardId: string) {
+  async function loadBoard(slug: string) {
     loading.value = true;
     try {
-      const board = await boardsApi.getBoard(boardId);
+      const board = await boardsApi.getBoardBySlug(slug);
       if (!board) throw new Error("Board not found");
       currentBoard.value = board;
 
+      const boardId = board.id;
       const [storiesList, allTasks] = await Promise.all([
         storiesApi.getStoriesByBoard(boardId),
         loadAllTasksForBoard(boardId),
@@ -51,10 +53,16 @@ export const useBoardStore = defineStore("board", () => {
     return allTasks;
   }
 
-  async function createBoard(title: string): Promise<string> {
+  async function createBoard(title: string): Promise<BoardRecord> {
     const id = crypto.randomUUID();
-    await boardsApi.createBoard({ id, title });
-    return id;
+    const existingBoards = await boardsApi.getAllBoards();
+    const existingSlugs = existingBoards.map((b) => b.slug);
+    const slug = generateUniqueSlug(title, existingSlugs);
+
+    const record: Omit<BoardRecord, "createdAt"> = { id, title, slug };
+    await boardsApi.createBoard(record);
+
+    return { ...record, createdAt: Date.now() };
   }
 
   async function updateBoardTitle(title: string): Promise<void> {
