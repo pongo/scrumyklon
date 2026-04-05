@@ -60,7 +60,9 @@ async function deleteBoard(board: BoardRecord) {
         <div class="relative flex w-80 flex-col border-r border-gray-200 bg-white shadow-xl">
           <!-- Drawer header -->
           <div class="flex items-center gap-2 border-b border-gray-200 px-4 py-3">
-            <h2 class="flex-1 text-lg font-semibold text-gray-800">Scrumyklon</h2>
+            <h2 class="flex-1 text-lg font-semibold text-gray-800">
+              <RouterLink to="/" class="hover:underline">Scrumyklon</RouterLink>
+            </h2>
             <a
               href="https://github.com/pongo/scrumyklon"
               target="_blank"
