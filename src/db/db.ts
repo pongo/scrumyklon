@@ -42,7 +42,7 @@ export interface ScrumyklonDB extends DBSchema {
   };
 }
 
-const DB_NAME = "scrumyklon2";
+const DB_NAME = "scrumyklon";
 const DB_VERSION = 2;
 
 export async function initDB() {
