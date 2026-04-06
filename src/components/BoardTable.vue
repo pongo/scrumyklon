@@ -60,9 +60,12 @@ function syncCellLists() {
   }
 }
 
-// Initial sync + watch for store task changes
-syncCellLists();
-watch(() => boardStore.tasks, syncCellLists, { deep: true });
+// Initial sync + watch for store changes (stories and tasks)
+watch(
+  [() => props.stories, () => boardStore.tasks],
+  () => syncCellLists(),
+  { deep: true, immediate: true },
+);
 
 async function clearDoneColumn() {
   if (!confirm("Delete all done tasks?")) return;
