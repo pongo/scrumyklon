@@ -4,15 +4,17 @@ import { useRouter, RouterLink } from "vue-router";
 import { Trash2, Share, Check } from "@lucide/vue";
 import type { BoardRecord } from "@/db/db";
 import { useBoardActions } from "@/composables/useBoardActions";
-import * as boardsApi from "@/db/boards";
+import { getAllBoards } from "@/db/boards";
 
 const router = useRouter();
 const { handleExport, deleteBoard, isExported } = useBoardActions();
 
 const boards = ref<BoardRecord[]>([]);
+const loading = ref(true);
 
 onMounted(async () => {
-  boards.value = await boardsApi.getAllBoards();
+  boards.value = await getAllBoards();
+  loading.value = false;
 });
 
 function navigateToCreate() {
@@ -28,7 +30,7 @@ async function handleDelete(board: BoardRecord) {
 
 <template>
   <div class="flex min-h-screen items-center justify-center bg-gray-50">
-    <div class="w-full max-w-2xl px-4">
+    <div v-if="!loading" class="w-full max-w-2xl px-4">
       <h1 class="mb-8 text-center text-3xl font-bold text-gray-800">Scrumyklon</h1>
 
       <div v-if="boards.length > 0" class="rounded-lg border border-gray-200 bg-white shadow-sm">
