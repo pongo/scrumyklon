@@ -30,7 +30,7 @@ async function handleDelete(board: BoardRecord) {
 
 <template>
   <div class="flex min-h-screen items-center justify-center bg-gray-50">
-    <div v-if="!loading" class="w-full max-w-2xl px-4">
+    <div v-if="!loading" class="w-full max-w-2xl p-4">
       <h1 class="mb-8 text-center text-3xl font-bold text-gray-800">Scrumyklon</h1>
 
       <div v-if="boards.length > 0" class="rounded-lg border border-gray-200 bg-white shadow-sm">
