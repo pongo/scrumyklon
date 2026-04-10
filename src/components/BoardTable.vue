@@ -258,4 +258,14 @@ tfoot td {
 .sortable-fallback {
   @apply opacity-80;
 }
+
+/* firefox */
+@-moz-document url-prefix() {
+  tbody > tr {
+    height: 1px;
+  }
+  tbody > tr > td[data-column] {
+    height: 100% !important;
+  }
+}
 </style>
