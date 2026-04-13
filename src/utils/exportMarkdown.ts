@@ -43,12 +43,20 @@ export async function exportBoardToMarkdown(board: BoardRecord): Promise<string>
       }
 
       for (const task of colTasks) {
-        const assignee = task.assignee ? ` @${task.assignee}` : "";
-        const label = col === "DONE" ? "[x]" : "[ ]";
-        lines.push(`- ${label}${assignee} ${task.title}`);
+        const assignee = task.assignee ? `@${task.assignee}` : "";
+        lines.push(`\n${toMarkdownQuote(`${assignee} ${task.title}`)}`);
       }
     }
   }
 
   return lines.join("\n") + "\n";
+}
+
+const reEOL = /\r?\n/;
+
+function toMarkdownQuote(text: string): string {
+  return text
+    .split(reEOL)
+    .map((line) => `> ${line}`)
+    .join("\n");
 }
