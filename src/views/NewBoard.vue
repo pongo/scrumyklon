@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useBoardStore } from "@/stores/board";
+import { requestPersistentStorage } from "@/db/db.ts";
 
 const router = useRouter();
 const boardStore = useBoardStore();
@@ -21,6 +22,7 @@ async function handleCreate() {
   isCreating.value = true;
   try {
     const slug = await boardStore.createBoard(trimmed);
+    await requestPersistentStorage();
     router.push(`/${slug}`);
   } catch (e) {
     console.error("Failed to create board:", e);
