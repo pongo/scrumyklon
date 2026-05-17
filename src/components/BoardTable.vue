@@ -7,6 +7,7 @@ import StoryForm from "@/components/StoryForm.vue";
 import TaskCard from "@/components/TaskCard.vue";
 import { Plus, Trash2 } from "@lucide/vue";
 import type { TaskRecord, StoryRecord } from "@/db/db";
+import { TASK_COLUMNS, TASK_COLUMN_LABELS } from "@/constants/taskColumns";
 
 const props = defineProps<{
   stories: StoryRecord[];
@@ -25,15 +26,8 @@ const emit = defineEmits<{
 
 const newStoryTitle = defineModel<string>("newStoryTitle", { default: "" });
 
-const columnLabels: Record<TaskRecord["column"], string> = {
-  BACKLOG: "Backlog",
-  TO_DO: "To Do",
-  IN_PROGRESS: "In Progress",
-  VERIFY: "Verify",
-  DONE: "Done",
-};
-
-const columns: TaskRecord["column"][] = ["BACKLOG", "TO_DO", "IN_PROGRESS", "VERIFY", "DONE"];
+const columnLabels = TASK_COLUMN_LABELS;
+const columns = TASK_COLUMNS;
 
 function cellKey(storyId: string, column: TaskRecord["column"]) {
   return `${storyId}:${column}`;

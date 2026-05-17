@@ -1,16 +1,7 @@
 import type { BoardRecord, TaskRecord } from "@/db/db";
 import * as storiesApi from "@/db/stories";
 import * as tasksApi from "@/db/tasks";
-
-const columnLabels: Record<TaskRecord["column"], string> = {
-  BACKLOG: "Backlog",
-  TO_DO: "To Do",
-  IN_PROGRESS: "In Progress",
-  VERIFY: "Verify",
-  DONE: "Done",
-};
-
-const columns: TaskRecord["column"][] = ["BACKLOG", "TO_DO", "IN_PROGRESS", "VERIFY", "DONE"];
+import { TASK_COLUMNS, TASK_COLUMN_LABELS } from "@/constants/taskColumns";
 
 export async function exportBoardToMarkdown(board: BoardRecord): Promise<string> {
   const stories = await storiesApi.getStoriesByBoard(board.id);
@@ -33,9 +24,9 @@ export async function exportBoardToMarkdown(board: BoardRecord): Promise<string>
 
     const storyTasks = storyTasksMap[story.id] ?? [];
 
-    for (const col of columns) {
+    for (const col of TASK_COLUMNS) {
       lines.push("");
-      lines.push(`### ${columnLabels[col]}`);
+      lines.push(`### ${TASK_COLUMN_LABELS[col]}`);
 
       const colTasks = storyTasks.filter((t) => t.column === col).sort((a, b) => a.order - b.order);
 

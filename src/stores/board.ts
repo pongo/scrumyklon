@@ -5,8 +5,7 @@ import * as boardsApi from "@/db/boards";
 import * as storiesApi from "@/db/stories";
 import * as tasksApi from "@/db/tasks";
 import { generateUniqueSlug } from "@/utils/slug";
-
-const COLUMNS: TaskRecord["column"][] = ["BACKLOG", "TO_DO", "IN_PROGRESS", "VERIFY", "DONE"];
+import { TASK_COLUMNS } from "@/constants/taskColumns";
 
 export const useBoardStore = defineStore("board", () => {
   const currentBoard = ref<BoardRecord | null>(null);
@@ -14,7 +13,7 @@ export const useBoardStore = defineStore("board", () => {
   const tasks = ref<TaskRecord[]>([]);
   const loading = ref(false);
 
-  const columns = computed(() => COLUMNS);
+  const columns = computed(() => TASK_COLUMNS);
 
   function getTasksForStory(storyId: string, column: TaskRecord["column"]) {
     return tasks.value
