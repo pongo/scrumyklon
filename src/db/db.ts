@@ -18,7 +18,7 @@ export interface StoryRecord {
 export interface TaskRecord {
   id: string;
   storyId: string;
-  column: "TO_DO" | "IN_PROGRESS" | "VERIFY" | "DONE";
+  column: "BACKLOG" | "TO_DO" | "IN_PROGRESS" | "VERIFY" | "DONE";
   title: string;
   assignee: string;
   order: number;

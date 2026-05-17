@@ -3,13 +3,14 @@ import * as storiesApi from "@/db/stories";
 import * as tasksApi from "@/db/tasks";
 
 const columnLabels: Record<TaskRecord["column"], string> = {
+  BACKLOG: "Backlog",
   TO_DO: "To Do",
   IN_PROGRESS: "In Progress",
   VERIFY: "Verify",
   DONE: "Done",
 };
 
-const columns: TaskRecord["column"][] = ["TO_DO", "IN_PROGRESS", "VERIFY", "DONE"];
+const columns: TaskRecord["column"][] = ["BACKLOG", "TO_DO", "IN_PROGRESS", "VERIFY", "DONE"];
 
 export async function exportBoardToMarkdown(board: BoardRecord): Promise<string> {
   const stories = await storiesApi.getStoriesByBoard(board.id);

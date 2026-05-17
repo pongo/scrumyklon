@@ -26,13 +26,14 @@ const emit = defineEmits<{
 const newStoryTitle = defineModel<string>("newStoryTitle", { default: "" });
 
 const columnLabels: Record<TaskRecord["column"], string> = {
+  BACKLOG: "Backlog",
   TO_DO: "To Do",
   IN_PROGRESS: "In Progress",
   VERIFY: "Verify",
   DONE: "Done",
 };
 
-const columns: TaskRecord["column"][] = ["TO_DO", "IN_PROGRESS", "VERIFY", "DONE"];
+const columns: TaskRecord["column"][] = ["BACKLOG", "TO_DO", "IN_PROGRESS", "VERIFY", "DONE"];
 
 function cellKey(storyId: string, column: TaskRecord["column"]) {
   return `${storyId}:${column}`;

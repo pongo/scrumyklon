@@ -6,7 +6,7 @@ import * as storiesApi from "@/db/stories";
 import * as tasksApi from "@/db/tasks";
 import { generateUniqueSlug } from "@/utils/slug";
 
-const COLUMNS: TaskRecord["column"][] = ["TO_DO", "IN_PROGRESS", "VERIFY", "DONE"];
+const COLUMNS: TaskRecord["column"][] = ["BACKLOG", "TO_DO", "IN_PROGRESS", "VERIFY", "DONE"];
 
 export const useBoardStore = defineStore("board", () => {
   const currentBoard = ref<BoardRecord | null>(null);
@@ -127,12 +127,12 @@ export const useBoardStore = defineStore("board", () => {
     await tasksApi.createTask({
       id,
       storyId,
-      column: "TO_DO",
+      column: "BACKLOG",
       title,
       assignee,
     });
     const task = await tasksApi
-      .getTasksByStory(storyId, "TO_DO")
+      .getTasksByStory(storyId, "BACKLOG")
       .then((t) => t.find((x) => x.id === id));
     if (task) tasks.value.push(task);
   }
