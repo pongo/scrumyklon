@@ -69,7 +69,7 @@ async function clearDoneColumn() {
 
 <template>
   <div class="flex-1 overflow-auto">
-    <table class="w-full" style="border-collapse: separate; border-spacing: 0">
+    <table class="w-full table-fixed" style="border-collapse: separate; border-spacing: 0">
       <colgroup>
         <col class="w-50" />
         <col class="w-10" />
