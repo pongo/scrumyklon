@@ -255,22 +255,27 @@ tfoot td {
 /* Keep a flex item in the source without adding a child to Sortable's list. */
 .drag-source:not(:has(> .sortable-ghost))::after {
   content: "";
-  @apply task-card-size pointer-events-none rounded-[1px];
+  @apply task-card-size pointer-events-none rounded-[1px] outline-gray-500/50;
+  --ghost-stripe: color-mix(in srgb, var(--color-gray-500) 15%, transparent);
 }
 
 .drag-source:not(:has(> .sortable-ghost)) > .after-source-ghost {
   order: 1;
 }
 
+.sortable-ghost {
+  @apply outline-blue-400/50;
+}
+
 .sortable-ghost,
 .drag-source::after {
-  @apply opacity-40 outline-2 outline-blue-400/50 outline-dashed;
+  @apply opacity-40 outline-2 outline-dashed;
   background: repeating-linear-gradient(
     45deg,
     transparent,
     transparent 6px,
-    rgba(59, 130, 246, 0.15) 6px,
-    rgba(59, 130, 246, 0.15) 12px
+    var(--ghost-stripe, rgba(59, 130, 246, 0.15)) 6px,
+    var(--ghost-stripe, rgba(59, 130, 246, 0.15)) 12px
   ) !important;
   box-shadow: none !important;
 }
