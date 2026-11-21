@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { VueDraggable } from "vue-draggable-plus";
+import { VueDraggable, type SortableEvent } from "vue-draggable-plus";
 import { useBoardStore } from "@/stores/board";
 import StoryCard from "@/components/StoryCard.vue";
 import StoryForm from "@/components/StoryForm.vue";
@@ -35,7 +35,14 @@ function cellKey(storyId: string, column: TaskRecord["column"]) {
 
 // Each cell gets its own mutable array that vue-draggable can reorder
 const cellLists = ref<Record<string, TaskRecord[]>>({});
+const dragSource = ref<{ key: string; index: number } | null>(null);
 const boardStore = useBoardStore();
+
+function rememberDragSource(key: string, event: SortableEvent) {
+  if (event.oldDraggableIndex !== undefined) {
+    dragSource.value = { key, index: event.oldDraggableIndex };
+  }
+}
 
 // Sync cellLists with store data — mutate in-place to keep VueDraggable's reference
 function syncCellLists() {
@@ -145,13 +152,16 @@ async function clearDoneColumn() {
                 v-model="cellLists[cellKey(story.id, col)]!"
                 :group="{ name: 'tasks', pull: true, put: true }"
                 class="flex flex-1 flex-wrap content-start items-start gap-2"
+                :class="{ 'drag-source': dragSource?.key === cellKey(story.id, col) }"
                 :animation="150"
                 ghost-class="sortable-ghost"
                 chosen-class="sortable-chosen"
                 fallback-class="sortable-fallback"
                 :fallback-tolerance="3"
+                @start="rememberDragSource(cellKey(story.id, col), $event)"
                 @end="
                   async (e: any) => {
+                    dragSource = null;
                     const sourceKey = cellKey(story.id, col);
                     const sourceTasks = cellLists[sourceKey] ?? [];
 
@@ -183,8 +193,12 @@ async function clearDoneColumn() {
                 "
               >
                 <TaskCard
-                  v-for="task in cellLists[cellKey(story.id, col)]"
+                  v-for="(task, index) in cellLists[cellKey(story.id, col)]"
                   :key="task.id"
+                  :class="{
+                    'after-source-ghost':
+                      dragSource?.key === cellKey(story.id, col) && index > dragSource.index,
+                  }"
                   :task="task"
                 />
               </VueDraggable>
@@ -224,7 +238,7 @@ async function clearDoneColumn() {
 </template>
 
 <style scoped>
-@reference "tailwindcss";
+@reference "../style.css";
 
 thead th {
   position: sticky;
@@ -238,7 +252,18 @@ tfoot td {
   z-index: 1;
 }
 
-.sortable-ghost {
+/* Keep a flex item in the source without adding a child to Sortable's list. */
+.drag-source:not(:has(> .sortable-ghost))::after {
+  content: "";
+  @apply task-card-size pointer-events-none rounded-[1px];
+}
+
+.drag-source:not(:has(> .sortable-ghost)) > .after-source-ghost {
+  order: 1;
+}
+
+.sortable-ghost,
+.drag-source::after {
   @apply opacity-40 outline-2 outline-blue-400/50 outline-dashed;
   background: repeating-linear-gradient(
     45deg,

@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@utility task-card-size {
+  @apply h-30 w-32;
+}
+
 .skip-ink-none {
   text-decoration-skip-ink: none;
 }
