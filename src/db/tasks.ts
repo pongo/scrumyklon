@@ -3,6 +3,15 @@ import type { TaskRecord } from "./db";
 
 type TaskColumn = TaskRecord["column"];
 
+export type TaskCell = Pick<TaskRecord, "storyId" | "column">;
+export type TaskMove = {
+  taskId: string;
+  source: TaskCell;
+  target: TaskCell;
+  beforeTaskId?: string;
+};
+type TaskPlacement = Pick<TaskRecord, "id" | "storyId" | "column" | "order">;
+
 export async function getTasksByStory(storyId: string, column?: TaskColumn): Promise<TaskRecord[]> {
   const db = await getDB();
   let result: TaskRecord[];
@@ -16,11 +25,11 @@ export async function getTasksByStory(storyId: string, column?: TaskColumn): Pro
 
 export async function createTask(task: Omit<TaskRecord, "order">): Promise<string> {
   const db = await getDB();
-  const existing = await getTasksByStory(task.storyId, task.column);
-  const order = existing.length > 0 ? existing[existing.length - 1]!.order + 1 : 0;
-  const record: TaskRecord = { ...task, order };
-  await db.add("tasks", record);
-  return record.id;
+  const tx = db.transaction("tasks", "readwrite");
+  const existing = await tx.store.index("by-story-column").getAll([task.storyId, task.column]);
+  const order = existing.reduce((next, record) => Math.max(next, record.order + 1), 0);
+  await Promise.all([tx.store.add({ ...task, order }), tx.done]);
+  return task.id;
 }
 
 export async function updateTask(
@@ -28,10 +37,10 @@ export async function updateTask(
   updates: Partial<Omit<TaskRecord, "id">>,
 ): Promise<void> {
   const db = await getDB();
-  const task = await db.get("tasks", id);
+  const tx = db.transaction("tasks", "readwrite");
+  const task = await tx.store.get(id);
   if (!task) throw new Error(`Task ${id} not found`);
-  Object.assign(task, updates);
-  await db.put("tasks", task);
+  await Promise.all([tx.store.put({ ...task, ...updates }), tx.done]);
 }
 
 export async function deleteTask(id: string): Promise<void> {
@@ -40,70 +49,59 @@ export async function deleteTask(id: string): Promise<void> {
 }
 
 export async function moveTask(
-  taskId: string,
-  newStoryId: string,
-  newColumn: TaskColumn,
-  insertIndex?: number,
-): Promise<void> {
+  boardId: string,
+  { taskId, source, target, beforeTaskId }: TaskMove,
+): Promise<TaskPlacement[]> {
   const db = await getDB();
-  const task = await db.get("tasks", taskId);
-  if (!task) throw new Error(`Task ${taskId} not found`);
+  const tx = db.transaction(["stories", "tasks"], "readwrite");
+  const stories = tx.objectStore("stories");
+  const tasks = tx.objectStore("tasks");
+  const index = tasks.index("by-story-column");
+  const sameCell = source.storyId === target.storyId && source.column === target.column;
+  const sourceStoryRequest = stories.get(source.storyId);
+  const [sourceStory, targetStory, sourceTasks, otherTasks] = await Promise.all([
+    sourceStoryRequest,
+    source.storyId === target.storyId ? sourceStoryRequest : stories.get(target.storyId),
+    index.getAll([source.storyId, source.column]),
+    sameCell ? [] : index.getAll([target.storyId, target.column]),
+  ]);
 
-  // Update task location and order
-  task.storyId = newStoryId;
-  task.column = newColumn;
-  task.order = insertIndex ?? task.order;
-  await db.put("tasks", task);
-}
-
-/**
- * Save all tasks in a cell atomically within a single transaction.
- */
-export async function saveCellTasks(
-  storyId: string,
-  column: TaskColumn,
-  tasks: TaskRecord[],
-): Promise<void> {
-  const db = await getDB();
-  const tx = db.transaction("tasks", "readwrite");
-  const store = tx.objectStore("tasks");
-
-  // Put all tasks with correct metadata. Existing records are overwritten by ID.
-  // Await each put to keep the transaction alive via idb's promise wrapping
-  for (let i = 0; i < tasks.length; i++) {
-    const t = { ...tasks[i]!, order: i, storyId, column };
-    await store.put(t);
+  const task = sourceTasks.find(({ id }) => id === taskId);
+  if (!task || sourceStory?.boardId !== boardId || targetStory?.boardId !== boardId) {
+    throw new Error("The source task or destination story has changed");
   }
 
-  await tx.done;
-}
+  const remaining = sourceTasks.filter(({ id }) => id !== taskId).sort((a, b) => a.order - b.order);
+  const destination = sameCell ? remaining : otherTasks.sort((a, b) => a.order - b.order);
+  const position = beforeTaskId
+    ? destination.findIndex(({ id }) => id === beforeTaskId)
+    : destination.length;
+  if (position < 0) throw new Error("The destination task has changed");
+  destination.splice(position, 0, task);
 
-/**
- * Save two cells atomically in a single transaction.
- * Used for cross-cell moves.
- */
-export async function saveBothCellsTasks(
-  sourceStoryId: string,
-  sourceColumn: TaskColumn,
-  sourceTasks: TaskRecord[],
-  targetStoryId: string,
-  targetColumn: TaskColumn,
-  targetTasks: TaskRecord[],
-): Promise<void> {
-  const db = await getDB();
-  const tx = db.transaction("tasks", "readwrite");
-  const store = tx.objectStore("tasks");
-
-  for (let i = 0; i < sourceTasks.length; i++) {
-    const t = { ...sourceTasks[i]!, order: i, storyId: sourceStoryId, column: sourceColumn };
-    await store.put(t);
+  const placements: TaskPlacement[] = [];
+  const writes: Promise<string>[] = [];
+  const cells = sameCell
+    ? [{ cell: target, records: destination }]
+    : [
+        { cell: source, records: remaining },
+        { cell: target, records: destination },
+      ];
+  for (const { cell, records } of cells) {
+    records.forEach((record, order) => {
+      const placement = { id: record.id, ...cell, order };
+      placements.push(placement);
+      if (
+        record.storyId !== cell.storyId ||
+        record.column !== cell.column ||
+        record.order !== order
+      ) {
+        writes.push(tasks.put({ ...record, ...placement }));
+      }
+    });
   }
-  for (let i = 0; i < targetTasks.length; i++) {
-    const t = { ...targetTasks[i]!, order: i, storyId: targetStoryId, column: targetColumn };
-    await store.put(t);
-  }
-
-  await tx.done;
+  await Promise.all([...writes, tx.done]);
+  return placements;
 }
 
 /**

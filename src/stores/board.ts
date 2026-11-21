@@ -15,12 +15,6 @@ export const useBoardStore = defineStore("board", () => {
 
   const columns = computed(() => TASK_COLUMNS);
 
-  function getTasksForStory(storyId: string, column: TaskRecord["column"]) {
-    return tasks.value
-      .filter((t) => t.storyId === storyId && t.column === column)
-      .sort((a, b) => a.order - b.order);
-  }
-
   async function loadBoard(slug: string) {
     loading.value = true;
     try {
@@ -167,71 +161,17 @@ export const useBoardStore = defineStore("board", () => {
     tasks.value = tasks.value.filter((t) => t.column !== "DONE");
   }
 
-  async function moveTask(
-    taskId: string,
-    newStoryId: string,
-    newColumn: TaskRecord["column"],
-    targetIndex?: number,
-  ): Promise<void> {
-    if (!taskId) return;
+  async function moveTask(move: tasksApi.TaskMove): Promise<void> {
+    const boardId = currentBoard.value?.id;
+    if (!boardId || loading.value) throw new Error("The board is unavailable");
 
-    // Get tasks in the target cell to compute correct order
-    const targetTasks = getTasksForStory(newStoryId, newColumn);
-    const index = targetIndex ?? targetTasks.length;
+    const placements = await tasksApi.moveTask(boardId, move);
+    if (currentBoard.value?.id !== boardId) return;
 
-    // Save the moved task with its new location and order
-    await tasksApi.moveTask(taskId, newStoryId, newColumn, index);
-
-    // Reload all tasks so cellLists watcher picks up the changes
-    if (currentBoard.value) {
-      const refreshed = await loadAllTasksForBoard(currentBoard.value.id);
-      tasks.value = refreshed;
-    }
-  }
-
-  /**
-   * Atomically save all tasks in a cell.
-   * Used by VueDraggable @change handler.
-   */
-  async function saveCell(
-    storyId: string,
-    column: TaskRecord["column"],
-    cellTasks: TaskRecord[],
-  ): Promise<void> {
-    await tasksApi.saveCellTasks(storyId, column, cellTasks);
-
-    // Reload all tasks so cellLists watcher picks up the changes
-    if (currentBoard.value) {
-      const refreshed = await loadAllTasksForBoard(currentBoard.value.id);
-      tasks.value = refreshed;
-    }
-  }
-
-  /**
-   * Atomically save both cells in a single transaction.
-   * Used for cross-cell moves.
-   */
-  async function saveBothCells(
-    sourceStoryId: string,
-    sourceColumn: TaskRecord["column"],
-    sourceTasks: TaskRecord[],
-    targetStoryId: string,
-    targetColumn: TaskRecord["column"],
-    targetTasks: TaskRecord[],
-  ): Promise<void> {
-    await tasksApi.saveBothCellsTasks(
-      sourceStoryId,
-      sourceColumn,
-      sourceTasks,
-      targetStoryId,
-      targetColumn,
-      targetTasks,
-    );
-
-    // Reload all tasks so cellLists watcher picks up the changes
-    if (currentBoard.value) {
-      const refreshed = await loadAllTasksForBoard(currentBoard.value.id);
-      tasks.value = refreshed;
+    const byId = new Map(placements.map((placement) => [placement.id, placement]));
+    for (const task of tasks.value) {
+      const placement = byId.get(task.id);
+      if (placement) Object.assign(task, placement);
     }
   }
 
@@ -245,7 +185,6 @@ export const useBoardStore = defineStore("board", () => {
     tasks,
     loading,
     columns,
-    getTasksForStory,
     loadBoard,
     createBoard,
     updateBoardTitle,
@@ -258,8 +197,6 @@ export const useBoardStore = defineStore("board", () => {
     deleteTask,
     deleteAllDoneTasks,
     moveTask,
-    saveCell,
-    saveBothCells,
     loadAllBoards,
   };
 });

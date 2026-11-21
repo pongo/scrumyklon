@@ -5,7 +5,6 @@ import BoardTable from "@/components/BoardTable.vue";
 import TaskDialog from "@/components/TaskDialog.vue";
 import BoardHeader from "@/components/BoardHeader.vue";
 import { useStoryManagement } from "@/composables/useStoryManagement";
-import type { TaskRecord } from "@/db/db";
 
 const props = defineProps<{ slug: string }>();
 
@@ -22,10 +21,6 @@ function openAddTask(storyId: string) {
 
 function closeAddTask() {
   addTaskStoryId.value = null;
-}
-
-function getTasks(storyId: string, column: TaskRecord["column"]) {
-  return boardStore.getTasksForStory(storyId, column);
 }
 
 async function handleStoryTitleUpdate(id: string, title: string) {
@@ -58,9 +53,8 @@ watch(
     <!-- Board Table -->
     <BoardTable
       v-model:new-story-title="newStoryTitle"
-      :stories="boardStore.stories"
       :is-adding-story="isAddingStory"
-      :get-tasks="getTasks"
+      :key="boardStore.currentBoard.id"
       @add-task="openAddTask"
       @start-add-story="startAddStory"
       @add-story="addStory"
