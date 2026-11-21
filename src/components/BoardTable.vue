@@ -67,9 +67,7 @@ function allowCardMove(event: MoveEvent, originalEvent: Event) {
       : (originalEvent as MouseEvent);
   if (!pointer || !Number.isFinite(pointer.clientX) || !Number.isFinite(pointer.clientY)) return;
 
-  const bounds = event.to.getBoundingClientRect();
-  const x = pointer.clientX - bounds.left;
-  const y = pointer.clientY - bounds.top;
+  const { clientX: x, clientY: y } = pointer;
 
   // Ignore repeated dragover events while cards animate beneath a stationary pointer.
   if (lastInsertion?.cell === event.to && Math.hypot(x - lastInsertion.x, y - lastInsertion.y) < 3) {
@@ -77,6 +75,9 @@ function allowCardMove(event: MoveEvent, originalEvent: Event) {
   }
 
   lastInsertion = { cell: event.to, x, y };
+
+  // Insert before the placeholder so removing it leaves the card in the original slot.
+  if (event.related === dragSource?.placeholder) return -1;
 }
 
 function clearSourcePlaceholder() {
@@ -197,7 +198,6 @@ async function clearDoneColumn() {
                 :group="{ name: 'tasks', pull: true, put: true }"
                 class="task-list flex flex-1 flex-wrap content-start items-start gap-2"
                 :animation="150"
-                :invert-swap="true"
                 :on-move="allowCardMove"
                 ghost-class="sortable-ghost"
                 chosen-class="sortable-chosen"
