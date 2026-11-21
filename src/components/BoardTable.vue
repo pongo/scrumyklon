@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import { VueDraggable, type SortableEvent } from "vue-draggable-plus";
+import { onBeforeUnmount, ref, watch } from "vue";
+import { VueDraggable, type MoveEvent, type SortableEvent } from "vue-draggable-plus";
 import { useBoardStore } from "@/stores/board";
 import StoryCard from "@/components/StoryCard.vue";
 import StoryForm from "@/components/StoryForm.vue";
@@ -35,14 +35,58 @@ function cellKey(storyId: string, column: TaskRecord["column"]) {
 
 // Each cell gets its own mutable array that vue-draggable can reorder
 const cellLists = ref<Record<string, TaskRecord[]>>({});
-const dragSource = ref<{ key: string; index: number } | null>(null);
 const boardStore = useBoardStore();
 
-function rememberDragSource(key: string, event: SortableEvent) {
-  if (event.oldDraggableIndex !== undefined) {
-    dragSource.value = { key, index: event.oldDraggableIndex };
+let dragSource: { cell: HTMLElement; nextCard: Element | null; placeholder: HTMLElement } | null =
+  null;
+let lastInsertion: { cell: HTMLElement; x: number; y: number } | null = null;
+
+function rememberDragSource(event: SortableEvent) {
+  const placeholder = document.createElement("div");
+  placeholder.className = "source-placeholder";
+  placeholder.setAttribute("aria-hidden", "true");
+  dragSource = { cell: event.from, nextCard: event.item.nextElementSibling, placeholder };
+}
+
+function updateSourcePlaceholder(event: SortableEvent) {
+  if (!dragSource) return;
+  const { cell, nextCard, placeholder } = dragSource;
+
+  if (event.to === cell) {
+    placeholder.remove();
+  } else if (placeholder.parentNode !== cell) {
+    // A sortable child makes the original slot a drop target at its original index.
+    cell.insertBefore(placeholder, nextCard?.parentNode === cell ? nextCard : null);
   }
 }
+
+function allowCardMove(event: MoveEvent, originalEvent: Event) {
+  const pointer =
+    "touches" in originalEvent
+      ? (originalEvent as TouchEvent).touches[0]
+      : (originalEvent as MouseEvent);
+  if (!pointer || !Number.isFinite(pointer.clientX) || !Number.isFinite(pointer.clientY)) return;
+
+  const bounds = event.to.getBoundingClientRect();
+  const x = pointer.clientX - bounds.left;
+  const y = pointer.clientY - bounds.top;
+
+  // Ignore repeated dragover events while cards animate beneath a stationary pointer.
+  if (lastInsertion?.cell === event.to && Math.hypot(x - lastInsertion.x, y - lastInsertion.y) < 3) {
+    return false;
+  }
+
+  lastInsertion = { cell: event.to, x, y };
+}
+
+function clearSourcePlaceholder() {
+  // unchoose runs before vue-draggable-plus restores the task using its original index.
+  dragSource?.placeholder.remove();
+  dragSource = null;
+  lastInsertion = null;
+}
+
+onBeforeUnmount(clearSourcePlaceholder);
 
 // Sync cellLists with store data — mutate in-place to keep VueDraggable's reference
 function syncCellLists() {
@@ -151,17 +195,19 @@ async function clearDoneColumn() {
                 :key="cellKey(story.id, col)"
                 v-model="cellLists[cellKey(story.id, col)]!"
                 :group="{ name: 'tasks', pull: true, put: true }"
-                class="flex flex-1 flex-wrap content-start items-start gap-2"
-                :class="{ 'drag-source': dragSource?.key === cellKey(story.id, col) }"
+                class="task-list flex flex-1 flex-wrap content-start items-start gap-2"
                 :animation="150"
+                :invert-swap="true"
+                :on-move="allowCardMove"
                 ghost-class="sortable-ghost"
                 chosen-class="sortable-chosen"
                 fallback-class="sortable-fallback"
                 :fallback-tolerance="3"
-                @start="rememberDragSource(cellKey(story.id, col), $event)"
+                @start="rememberDragSource"
+                @change="updateSourcePlaceholder"
+                @unchoose="clearSourcePlaceholder"
                 @end="
                   async (e: any) => {
-                    dragSource = null;
                     const sourceKey = cellKey(story.id, col);
                     const sourceTasks = cellLists[sourceKey] ?? [];
 
@@ -193,12 +239,8 @@ async function clearDoneColumn() {
                 "
               >
                 <TaskCard
-                  v-for="(task, index) in cellLists[cellKey(story.id, col)]"
+                  v-for="task in cellLists[cellKey(story.id, col)]"
                   :key="task.id"
-                  :class="{
-                    'after-source-ghost':
-                      dragSource?.key === cellKey(story.id, col) && index > dragSource.index,
-                  }"
                   :task="task"
                 />
               </VueDraggable>
@@ -252,15 +294,9 @@ tfoot td {
   z-index: 1;
 }
 
-/* Keep a flex item in the source without adding a child to Sortable's list. */
-.drag-source:not(:has(> .sortable-ghost))::after {
-  content: "";
-  @apply task-card-size pointer-events-none rounded-[1px] outline-gray-500/50;
+.task-list > :deep(.source-placeholder) {
+  @apply task-card-size rounded-[1px] outline-gray-500/50;
   --ghost-stripe: color-mix(in srgb, var(--color-gray-500) 15%, transparent);
-}
-
-.drag-source:not(:has(> .sortable-ghost)) > .after-source-ghost {
-  order: 1;
 }
 
 .sortable-ghost {
@@ -268,7 +304,7 @@ tfoot td {
 }
 
 .sortable-ghost,
-.drag-source::after {
+.task-list > :deep(.source-placeholder) {
   @apply opacity-40 outline-2 outline-dashed;
   background: repeating-linear-gradient(
     45deg,
